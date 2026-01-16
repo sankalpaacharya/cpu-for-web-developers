@@ -9,9 +9,10 @@ import {
   Pre,
 } from "codehike/code";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
 import { SmoothPre } from "./smooth-pre";
 
-// Token transitions handler for smooth code animations
 const tokenTransitions: AnnotationHandler = {
   name: "token-transitions",
   PreWithRef: SmoothPre,
@@ -20,9 +21,13 @@ const tokenTransitions: AnnotationHandler = {
   ),
 };
 
-// Schema for scrollycoding content
 const Schema = Block.extend({
-  steps: z.array(Block.extend({ code: HighlightedCodeBlock })),
+  steps: z.array(
+    Block.extend({
+      code: HighlightedCodeBlock.optional(),
+      preview: z.array(Block).optional(),
+    })
+  ),
 });
 
 type ScrollycodingProps = {
@@ -35,40 +40,35 @@ export function Scrollycoding(props: ScrollycodingProps) {
   const { steps } = parseProps(props, Schema);
   const [activeStep, setActiveStep] = useState(0);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const hasScrolled = useRef(false);
 
-  // Find which step is most prominent in the viewport
   const updateActiveStep = useCallback(() => {
+    if (!hasScrolled.current) {
+      return;
+    }
+
     const viewportHeight = window.innerHeight;
-    const targetY = viewportHeight * 0.3; // Focus point at 30% from top
+    const viewportCenter = viewportHeight / 2;
 
-    let closestIndex = 0;
-    let closestDistance = Infinity;
+    let newActiveStep = 0;
 
-    stepRefs.current.forEach((ref, index) => {
-      if (!ref) return;
+    for (let i = stepRefs.current.length - 1; i >= 0; i--) {
+      const ref = stepRefs.current[i];
+      if (!ref) continue;
 
       const rect = ref.getBoundingClientRect();
-      const elementCenter = rect.top + rect.height / 2;
-      const distance = Math.abs(elementCenter - targetY);
-
-      // Only consider if element is at least partially visible
-      if (rect.bottom > 0 && rect.top < viewportHeight) {
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = index;
-        }
+      if (rect.top <= viewportHeight * 0.5 && rect.bottom > 0) {
+        newActiveStep = i;
+        break;
       }
-    });
+    }
 
-    setActiveStep(closestIndex);
+    setActiveStep(newActiveStep);
   }, []);
 
   useEffect(() => {
-    // Initial update
-    updateActiveStep();
-
-    // Update on scroll
     const handleScroll = () => {
+      hasScrolled.current = true;
       requestAnimationFrame(updateActiveStep);
     };
 
@@ -76,35 +76,51 @@ export function Scrollycoding(props: ScrollycodingProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [updateActiveStep]);
 
-  const activeCode = steps[activeStep]?.code;
+  const activeStep$ = steps[activeStep];
+  const activeCode = activeStep$?.code;
+  const activePreview = activeStep$?.preview;
 
   return (
     <div className="scrollycoding w-full">
       <div className="flex flex-col lg:flex-row">
         {/* Left: Text content */}
-        <div className="w-full lg:w-1/2 px-6 lg:pl-[max(24px,calc((100vw-1200px)/2))] lg:pr-16">
-          <div className="max-w-md ml-auto space-y-20 pt-16 pb-32">
+        <div className="w-full lg:w-1/2 px-6 lg:pl-[max(24px,calc((100vw-1200px)/2))] lg:pr-8">
+          <div className="max-w-xl ml-auto space-y-32 pt-[30vh] pb-[50vh]">
             {steps.map((step, index) => (
               <div
                 key={index}
                 ref={(el) => {
                   stepRefs.current[index] = el;
                 }}
-                className="transition-opacity duration-300 ease-out"
                 style={{
-                  opacity: activeStep === index ? 1 : 0.35,
+                  opacity: activeStep === index ? 1 : 0.5,
                 }}
               >
-                <h3 className="text-base font-medium text-foreground mb-3">
+                <h3
+                  className={`text-base font-medium mb-3 transition-colors ${
+                    activeStep === index
+                      ? "text-foreground"
+                      : "text-muted-foreground"
+                  }`}
+                >
                   {step.title}
                 </h3>
                 <div className="text-sm leading-[1.75] text-muted-foreground [&_strong]:text-foreground [&_code]:text-xs [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded">
                   {step.children}
                 </div>
 
-                {/* Mobile: Show code inline */}
+                {/* Mobile: Show content inline */}
                 <div className="lg:hidden mt-6">
                   {step.code && <CodeDisplay code={step.code} />}
+                  {!step.code && step.preview && (
+                    <div className="preview-content">
+                      {Array.isArray(step.preview)
+                        ? step.preview.map((block: any, i: number) => (
+                            <div key={i}>{block.children}</div>
+                          ))
+                        : (step.preview as any).children}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -113,9 +129,42 @@ export function Scrollycoding(props: ScrollycodingProps) {
 
         {/* Right: Sticky code */}
         <div className="hidden lg:block lg:w-1/2">
-          <div className="sticky top-0 pt-16 px-6 lg:pr-[max(24px,calc((100vw-1200px)/2))] lg:pl-8">
-            <div className="w-full">
-              {activeCode && <CodeDisplay code={activeCode} />}
+          <div className="sticky top-0 h-screen flex items-center px-6 lg:pr-[max(24px,calc((100vw-1200px)/2))] lg:pl-8">
+            <div className="w-full relative max-h-[90vh] flex flex-col justify-center">
+              <AnimatePresence mode="wait">
+                {activeCode ? (
+                  <motion.div
+                    key="code-display"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="max-h-[80vh] overflow-y-auto custom-scrollbar">
+                      <CodeDisplay code={activeCode} />
+                    </div>
+                  </motion.div>
+                ) : activePreview ? (
+                  <motion.div
+                    key={`preview-${activeStep}`}
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                    transition={{ duration: 0.3 }}
+                    className="preview-content flex items-center justify-center p-4 w-full"
+                  >
+                    <div className="w-full h-full">
+                      {Array.isArray(activePreview)
+                        ? activePreview.map((block: any, i: number) => (
+                            <div key={i} className="h-full">
+                              {block.children}
+                            </div>
+                          ))
+                        : (activePreview as any).children}
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -124,17 +173,14 @@ export function Scrollycoding(props: ScrollycodingProps) {
   );
 }
 
-// Clean syntax highlighted code - no box/container
 function CodeDisplay({ code }: { code: HighlightedCode }) {
   return (
     <div className="font-mono">
-      {/* Filename - subtle */}
       {code.meta && (
         <div className="text-xs text-muted-foreground mb-3 opacity-60">
           {code.meta}
         </div>
       )}
-      {/* Just the code with syntax highlighting */}
       <Pre
         code={code}
         handlers={[tokenTransitions]}

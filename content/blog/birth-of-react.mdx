@@ -5,84 +5,118 @@ date: "2026-01-03"
 topic: "Engineering"
 ---
 
-<div style={{display: 'flex', justifyContent: 'center'}}>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/8pDqJVdNa44?si=vSljEd_feC1yPzjn" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
-</div>
-
+## !!steps The Documentary
 
 I can't explain everything in this blog but I'll try to keep this short. 
-my recommendation would be for you to watch the documentary, it's awesome. all the React core team members
-have explained how everything led to creating REACT. from people disliking it to it becoming 
+
+my recommendation would for you to watch the documentary it's awesome, all react core teams
+have explained how everything led to creating REACT. from people disliking it to become 
 the dominant frontend framework.
 
+### !!preview
+
+<div className="flex justify-center items-center h-full">
+  <iframe width="100%" height="315" src="https://www.youtube.com/embed/8pDqJVdNa44?si=vSljEd_feC1yPzjn" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
+</div>
+
+## !!steps The Problem (2010)
+
 But, here's a little story if you wanna read!
-React wasn't a very beloved shiny tool at the beginning, there were lots of ups and downs in the journey of React
 
-Back in 2010 Facebook was facing an issue maintaining the UI, the Facebook ads page was
-growing massively and it would make a business impact if there was a constant bug
+Back in 2010 facebook was facing an issue mainting the issues with UI, facebook ads page was
+growing masively and it needed would make a business impact if they would be a constant bug
 
-Facebook had complex UI designs, they had the best engineering team working on trying to 
-fix the issues. back in the early days there were frameworks like Backbone.js, Ember.js, jQuery etc 
+facebook had a complex UI design's, they had a best engineering team working on trying to 
+fix the issues, back in early days there were frameworks like backbone js, amberjs, jQuery etc 
 
-updating UI back then was purely through updating the DOM, which was pretty complicated, tho there
-were frameworks like Backbone.js, jQuery etc
+updating UI back then was purely through the updating DOM, which was pretty complicated, tho there
+were framework like backbone js, jQuery etc
 
-Backbone.js - which made writing JavaScript in the MVC architecture
-jQuery - improved the experience of working with DOM 
+backbone js- which made writing javascript in the MVC airchitecture
+jQuery - improved the expereince of working with DOM 
 
-Facebook team created a framework called Bolt.js which was a combination of the different 
-philosophies of these frameworks.
+```javascript !code 1-jquery.js
+// The "Standard" Way (2010 style)
+function renderUser() {
+  const nameEl = document.getElementById('username');
+  
+  // Manually finding and updating nodes
+  nameEl.innerHTML = user.name;
+  
+  if (user.messages > 0) {
+    $('#msg-count').show();
+  } else {
+    $('#msg-count').hide();
+  }
+}
+```
 
-Bolt.js alone wouldn't solve the problem they were facing, updating DOM is an expensive
-task cause it has to paint the screen, render every pixel. they needed a 
+## !!steps The Solution (Bolt.js)
+
+facebook team created a framework called a boltjs which was a combination of the different 
+phyilosphy of these framework and made a framework called boltjs.
+
+Boltjs alone wouldn't solve the problem they were facing, updating DOM is a expensive
+task cause it has to paint the screen, render every pixel. they needed something 
 unique solution for the unique problem they were facing
 
-Jordan Walke had interesting new ideas about improving Bolt.js, earlier 
-React was called FBolt (functional bolt), an improvement based on Bolt.js
+jordan walke had a interesting new ideas about the improving the boltjs, eailier 
+react was called fbolt (functional bolt) improvement based on the boltjs
 
-when there is something changing in the UI, completely re-rendering the whole UI was an idea from Jordan Walke.
+when there is something change in the UI completely rendering the whole UI was an idea from the jordan walke.
 
-jumping to the year 2013 when React was open-sourced and first presented at JSConf, people were not 
-happy, they didn't like the idea of mixing JS and HTML. Facebook team had a positive expectation but the reaction 
-from the people was completely opposite, Facebook team thought React would only live on in the Facebook codebase
+```javascript !code 2-concept.js
+// The Radical Idea:
+// Just wipe the screen and repaint!
+
+function App(data) {
+  return `
+    <div>
+      <h1>${data.name}</h1>
+    </div>
+  `;
+}
+
+document.body.innerHTML = App(newData);
+```
+
+## !!steps The Backlash
+
+jumping to the year 2013 when React was opensourced and first presented on the JSconf, people were not 
+happy, they didn't like the idea of the mixing JS and HTML. facebook team had an positive expectation but than reaction 
+from the people were completely opposite, facebook team thought react would only live off on the facebook codebase
+
+### !!preview
 
 <TweetGroup tweets={[
   {
     name: "Dev Skeptic",
     username: "devskeptic",
-    content: "So I read through some of the #ReactJS docs. facebook.github.io/react/ . Surely they're trolling us, right? #IsThisRealLife",
+    content: "So I read through some of the #ReactJS docs. Surely they're trolling us, right? #IsThisRealLife",
     date: "May 29, 2013"
   },
   {
     name: "Clean Code Fan",
     username: "cleancodefan",
-    content: "Separation of concerns is a pretty core tenant of CS. React just seems wrongity wrong wrong wrong. #jsconf",
-    date: "May 29, 2013"
-  },
-  {
-    name: "PHP Hater",
-    username: "phphater",
-    content: "React.js - PHP for the browser... Yikes. facebook.github.io/react/",
-    date: "May 29, 2013"
-  },
-  {
-    name: "Conference Goer",
-    username: "conferencegoer",
-    content: "Facebook React is not getting much love at #jsconf. Mixing HTML in JS seems like a bad idea",
+    content: "Separation of concerns is a pretty core tenant of CS. React just seems wrongity wrong wrong wrong.",
     date: "May 29, 2013"
   }
 ]} />
 
-But someone outside of Facebook wanted to try React, [@Sophie](https://bsky.app/profile/sophiebits.com). she saw the announcement on Hacker News,
-she was building an interactive math question editor for Khan Academy, she decided to try
-React for her application in production. she had a really good time using it, later she started 
-filing issues and contributing, that sparked the spirit for the React team 
+## !!steps Adoption
 
-React was a new concept, the React team started spreading the knowledge of React one concept at a time,
-one person at a time. later that same year @Pete gave a talk at JSConf  
+But someone outside of the facebook wanted to try the React, @Shopie, she saw the announcement news on hackernews
+she was building an interactive math question editor for the Khans Academy, she decided to try
+a react for her application on a production, she had really good time using it later, she used reacted 
+and stared filling an issues and contributing, that sparkeld the spirit for the react team 
 
-<div style={{display: 'flex', justifyContent: 'center'}}>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/x7cQ3mrcKaY?si=Undzaf14gx-4RIIx" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
+React was new concept, react team started spreading the knowledge of react at a time, one concept at a time
+one person at a time later on same year @pete gave talk in the jsConf  
+
+after that talk people started paying attention, they were willing to try react,
+
+### !!preview
+
+<div className="flex justify-center items-center h-full">
+  <iframe width="100%" height="315" src="https://www.youtube.com/embed/x7cQ3mrcKaY?si=Undzaf14gx-4RIIx" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
 </div>
-
-after that talk people started paying attention, they were willing to try React.
