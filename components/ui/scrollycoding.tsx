@@ -93,7 +93,7 @@ export function Scrollycoding(props: ScrollycodingProps) {
   const activePreview = activeStep$?.preview;
 
   return (
-    <div className="scrollycoding w-full">
+    <div className="scrollycoding w-screen relative left-1/2 right-1/2 -mx-[50vw] not-prose my-16 py-8 border-y border-border/30 bg-background/50">
       <div className="flex flex-col lg:flex-row">
         {/* Left: Text content */}
         <div className="w-full lg:w-1/2 px-6 lg:pl-[max(24px,calc((100vw-1200px)/2))] lg:pr-8">
@@ -109,7 +109,7 @@ export function Scrollycoding(props: ScrollycodingProps) {
                 }}
               >
                 <h3
-                  className={`text-base font-medium mb-3 transition-colors ${
+                  className={`text-lg font-medium mb-3 transition-colors ${
                     activeStep === index
                       ? "text-foreground"
                       : "text-muted-foreground"
@@ -130,7 +130,7 @@ export function Scrollycoding(props: ScrollycodingProps) {
                     );
                   })()}
                 </h3>
-                <div className="text-sm leading-[1.75] text-muted-foreground [&_strong]:text-foreground [&_code]:text-xs [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded">
+                <div className="text-base leading-[1.8] text-muted-foreground [&_strong]:text-foreground [&_code]:text-sm [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded">
                   {step.children}
                 </div>
 

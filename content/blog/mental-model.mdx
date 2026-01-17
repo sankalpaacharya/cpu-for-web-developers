@@ -1,0 +1,82 @@
+---
+title: "Mental Model- React as a Runtime"
+description: "Understanding the brain of your computer - how CPUs work and why they matter"
+date: "2026-02-03"
+topic: "React"
+---
+
+## Mental Model
+
+When you're learning React, it helps to have a mental model of what's actually happening under the hood. React isn't just a templating library – it's a **runtime** that manages your UI.
+
+Think of it this way: instead of you manually telling the browser what to change, you describe **what the UI should look like**, and React figures out how to make it happen.
+
+### Why This Matters
+
+Understanding this model helps you:
+- Write more predictable code
+- Debug issues faster  
+- Make better architectural decisions
+
+---
+
+<Scrollycoding>
+
+## !!steps The Declarative Approach
+
+React lets you describe your UI declaratively. You don't tell React *how* to update the DOM – you tell it *what* you want to see.
+
+```jsx !code declarative.jsx
+function Counter({ count }) {
+  return (
+    <div>
+      <h1>Count: {count}</h1>
+      <p>The count is {count > 10 ? 'high' : 'low'}</p>
+    </div>
+  );
+}
+```
+
+## !!steps The Reconciliation Process
+
+When state changes, React creates a new virtual representation and compares it with the previous one. This is called **reconciliation**.
+
+```jsx !code reconciliation.jsx
+// When count changes from 5 to 6:
+// 
+// OLD:  <h1>Count: 5</h1>
+// NEW:  <h1>Count: 6</h1>
+//
+// React sees: "Only the text changed"
+// React does: Update just that text node
+```
+
+## !!steps Batching Updates
+
+React batches multiple state updates together for performance. This is why you can't rely on `state` being updated immediately.
+
+```jsx !code batching.jsx
+function handleClick() {
+  setCount(c => c + 1);
+  setCount(c => c + 1);
+  setCount(c => c + 1);
+  
+  // React batches these!
+  // Only ONE re-render happens
+  // count goes from 0 → 3
+}
+```
+
+</Scrollycoding>
+
+---
+
+## Key Takeaways
+
+Now that you understand React as a runtime, remember these principles:
+
+1. **React manages updates** – you describe, it executes
+2. **Virtual DOM is a strategy** – not a feature you interact with directly
+3. **Batching is automatic** – trust the runtime to optimize
+
+In the next post, we'll dive deeper into how React Fiber makes all of this possible.

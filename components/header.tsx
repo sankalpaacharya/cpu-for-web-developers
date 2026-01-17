@@ -33,7 +33,7 @@ export function Header() {
       <div className="px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
           {/* Glassmorphism frame */}
-          <div className="p-0.5 rounded-xl bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-sm">
+          <div className="p-0.5 rounded-xl bg-linear-to-br from-white/20 to-white/5 backdrop-blur-sm">
             <div className="w-10 h-10 rounded-lg overflow-hidden bg-background/50 border border-white/10">
               <Image
                 src="https://github.com/sankalpaacharya.png"
@@ -52,26 +52,8 @@ export function Header() {
           </div>
         </Link>
         <nav className="flex items-center gap-6">
-          <Link
-            href="/"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Home
-          </Link>
-          <Link
-            href="/"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            All posts
-          </Link>
-          <a
-            href="mailto:sanku@example.com"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Contact
-          </a>
           <button className="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm transition-colors flex items-center gap-2">
-            Hire me
+            Follow me
             <span>→</span>
           </button>
         </nav>

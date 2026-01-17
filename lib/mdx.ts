@@ -137,3 +137,21 @@ export function getAllPostSlugs(): string[] {
     .filter((file) => file.endsWith(".mdx"))
     .map((file) => file.replace(/\.mdx$/, ""));
 }
+
+export function isScrollyPost(slug: string): boolean {
+  const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
+  if (!fs.existsSync(filePath)) {
+    return false;
+  }
+  const source = fs.readFileSync(filePath, "utf-8");
+  
+  // Split frontmatter and content
+  const parts = source.split('---');
+  if (parts.length < 3) return false;
+  
+  const content = parts.slice(2).join('---').trim();
+  
+  // Only return true if the post is PURELY scrolly (starts with !!steps)
+  // If it has mixed content (prose before scrolly), return false
+  return content.startsWith('## !!steps');
+}
