@@ -11,72 +11,63 @@ When you're learning React, it helps to have a mental model of what's actually h
 
 Think of it this way: instead of you manually telling the browser what to change, you describe **what the UI should look like**, and React figures out how to make it happen.
 
-### Why This Matters
 
-Understanding this model helps you:
-- Write more predictable code
-- Debug issues faster  
-- Make better architectural decisions
+how to write this part 
+- showing people the painpoint of the manual dom manupliation and how hard it is to change the state manually 
+- showing what exactly react does to solve this pain point 
+- if it's UI library what exactly is the UI. UI is justa tree like structure and the main idea of the react is so change the 
+UI structure it just tells how out UI should look like at a particular time, that is why we have different react renderer
+showing few renderer like maybe a react native or some hardware level stuff, or maybe a pdf would be better
+once people understand what exactly is react and what it is doing we can movve to other 
 
----
 
-<Scrollycoding>
+I would like to divide the react into two parts -
+- react core 
+- react renderer 
 
-## !!steps The Declarative Approach
 
-React lets you describe your UI declaratively. You don't tell React *how* to update the DOM – you tell it *what* you want to see.
 
-```jsx !code declarative.jsx
-function Counter({ count }) {
-  return (
-    <div>
-      <h1>Count: {count}</h1>
-      <p>The count is {count > 10 ? 'high' : 'low'}</p>
-    </div>
-  );
-}
-```
+ok so 
+we will start with the the pain point of the dom manupliation( browser pain, single thread and etc) 
+we will talk about the fiber and single thread when we will talk about the fiber later on but rn it's not necessary to 
+discuss  up til that point 
 
-## !!steps The Reconciliation Process
 
-When state changes, React creates a new virtual representation and compares it with the previous one. This is called **reconciliation**.
+show them what exactly is the UI library (my linkedin post for the reference)
+i will do one think today that is write a single blog on why react is just a runtime post it in tech nepal 
+get the people review one blog today, and once i explore more deeply i will share on reactiflux later on
 
-```jsx !code reconciliation.jsx
-// When count changes from 5 to 6:
-// 
-// OLD:  <h1>Count: 5</h1>
-// NEW:  <h1>Count: 6</h1>
-//
-// React sees: "Only the text changed"
-// React does: Update just that text node
-```
 
-## !!steps Batching Updates
 
-React batches multiple state updates together for performance. This is why you can't rely on `state` being updated immediately.
 
-```jsx !code batching.jsx
-function handleClick() {
-  setCount(c => c + 1);
-  setCount(c => c + 1);
-  setCount(c => c + 1);
-  
-  // React batches these!
-  // Only ONE re-render happens
-  // count goes from 0 → 3
-}
-```
 
-</Scrollycoding>
 
----
+personal note for me 
+insert the dan blog here 
+I think the dan has a great blog on this, we know react is a UI library, lets addcj
+this on the reference i thin 
 
-## Key Takeaways
+i think adding the reference at the end of the blog will more suitable then saying this blog helped me
 
-Now that you understand React as a runtime, remember these principles:
 
-1. **React manages updates** – you describe, it executes
-2. **Virtual DOM is a strategy** – not a feature you interact with directly
-3. **Batching is automatic** – trust the runtime to optimize
+React is a UI library? but let's understand the pain point of 
 
-In the next post, we'll dive deeper into how React Fiber makes all of this possible.
+the reason i think the mental model matters more than before we even start talking about the react and the other 
+internal things. 
+
+I  
+
+
+understadning of UI first i think that will make things more early
+
+
+before we start the internal i think it's important for us to think what react actually is and how it does 
+we know react is a UI library. is it so? 
+
+let's think of react as the Runtime whic
+
+
+
+
+
+
