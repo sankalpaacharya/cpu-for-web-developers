@@ -39,17 +39,17 @@ export default async function BlogPost({
 
   const articleClass = isScrolly
     ? "prose prose-invert max-w-none prose-headings:font-medium prose-headings:tracking-tight prose-p:text-muted-foreground prose-p:leading-relaxed prose-strong:text-foreground prose-strong:font-medium prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80"
-    : "prose prose-invert max-w-2xl mx-auto px-6 py-10 prose-headings:font-medium prose-headings:tracking-tight prose-headings:text-foreground prose-h2:text-lg prose-h2:mt-8 prose-h2:mb-3 prose-h3:text-base prose-p:text-base prose-p:text-muted-foreground prose-p:leading-[1.8] prose-p:my-4 prose-strong:text-foreground prose-strong:font-medium prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80 prose-li:text-base prose-li:text-muted-foreground prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-pre:p-0 prose-pre:m-0 prose-pre:bg-transparent";
+    : "prose prose-invert max-w-2xl mx-auto px-6 py-8 prose-headings:font-medium prose-headings:tracking-tight prose-headings:text-foreground prose-h1:text-[1.75rem] prose-h1:mt-14 prose-h1:mb-6 prose-h2:text-xl prose-h2:mt-12 prose-h2:mb-5 prose-h3:text-lg prose-h3:mt-10 prose-h3:mb-4 prose-p:text-[1.0625rem] prose-p:text-muted-foreground prose-p:leading-[1.85] prose-p:my-7 prose-strong:text-foreground prose-strong:font-medium prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80 prose-li:text-[1.0625rem] prose-li:text-muted-foreground prose-li:my-3 prose-li:leading-[1.8] prose-ul:my-7 prose-ol:my-7 prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-blockquote:pl-6 prose-blockquote:my-8 prose-pre:p-0 prose-pre:m-0 prose-pre:bg-transparent prose-pre:my-8 prose-img:my-10 prose-img:rounded-lg prose-hr:my-14 prose-hr:border-muted-foreground/20";
 
   return (
     <main className="min-h-screen">
       {/* Header for normal blog posts */}
       {!isScrolly && (
-        <header className="max-w-2xl mx-auto px-6 pt-16 pb-12">
+        <header className="max-w-2xl mx-auto px-6 pt-16 pb-16">
           {/* Back button */}
           <a
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8 group"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-10 group"
           >
             <HugeiconsIcon
               icon={ArrowLeft01Icon}
@@ -60,9 +60,9 @@ export default async function BlogPost({
           </a>
 
           {/* Meta info - subtle and refined */}
-          <div className="flex items-center gap-2 mb-6 text-[11px] text-muted-foreground/60 uppercase tracking-[0.2em]">
+          <div className="flex items-center gap-3 mb-6 text-xs text-muted-foreground/60 uppercase tracking-[0.15em]">
             <span>{post.frontmatter.topic}</span>
-            <span className="text-muted-foreground/30">—</span>
+            <span className="text-muted-foreground/30">·</span>
             <span>
               {new Date(post.frontmatter.date).toLocaleDateString("en-US", {
                 year: "numeric",
@@ -72,21 +72,18 @@ export default async function BlogPost({
             </span>
           </div>
 
-          {/* Title - italic, elegant serif feel */}
-          <h1
-            className="text-3xl italic font-light tracking-tight text-foreground mb-5 leading-tight"
-            style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
-          >
+          {/* Title - clean, readable */}
+          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground mb-6 leading-[1.3]">
             {post.frontmatter.title}
           </h1>
 
           {/* Description - subtle, refined */}
-          <p className="text-sm text-muted-foreground/80 leading-relaxed tracking-wide">
+          <p className="text-base text-muted-foreground/70 leading-relaxed max-w-xl">
             {post.frontmatter.description}
           </p>
 
-          {/* Subtle separator */}
-          <div className="mt-10 w-8 h-px bg-muted-foreground/20" />
+          {/* Elegant separator */}
+          <div className="mt-12 w-16 h-px bg-muted-foreground/20" />
         </header>
       )}
 

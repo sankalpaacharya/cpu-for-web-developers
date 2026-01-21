@@ -10,27 +10,67 @@ A lot of confusion of mine got clear when i got the correct mental model for the
 {/* <img src="/react/confused.svg" alt="Confused face" width="300" height="100" style={{ display: 'block', margin: '2rem auto' }} /> */}
 
 
+# What is UI?
+
+We all know react is a UI library but let’s snap back and think what exactly is the UI, 
+you might say its is visual surface where we interact, UI consists of buttons, links, colors, image, layouts, icons etc 
+
+
 <img src="/react/youtube.svg" alt="Confused face" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
-
-We all know react is a UI library but let’s snap back and think what is UI, its is visual surface where we interact, UI consists of buttons, links, colors, image, layouts, icons etc 
-
-
 
 for web we have different html tags like button div, a, img etc to create these UI elements and for mobile apps we have native components like View Pressable, scrollview etc for those who are not familiar with mobile development don’t worry they are just like html tags but for mobile app.
 
 no matter if it’s a mobile UI or the web UI they share one common thing that is hierarchy, they both same some tree like structure don’t they? 
 
-```tsx
-const a = "sankalpa"
+```json
+{
+  author: {
+    avatar: 'https://example.com/dril.jpg',
+    displayName: 'wint',
+    handle: 'dril'
+  },
+  text: 'no',
+  createdAt: '2008-09-15T17:25:00.000Z',
+  replyCount: 819,
+  repostCount: 56137,
+  likeCount: 125381
+}
 ```
 
 in web you see a button, img tag is inside div tag and div tag is inside a body tag.
 
 same for mobile as well we have View component and inside you create pressable component etc
 
-keeping this in mind let’s move forward 
+the way UI are structure is somehow like a tree like structures no matter which platform we are
 
-i would like to break react  in two parts one is reconciler and another one is host instance
+okay keeping this in mind let’s move forward 
+
+# React for different Platform
+
+React is a pretty dominant frontend framework, it's everywhere, we have very popular library
+based on react like nextjs(great for server side rendering), react-native which is used for 
+building mobile applications or maybe react-three-js for building 3d apps or maybe ink for 
+building terminal applications
+
+maybe you have used these framework or maybe you have just heard of them, but i'm sure 
+you have used react for building web applications, if not why would you be reading this blog, right?
+
+as i just mentioned, react-native for building mobile applications and ink for building terminal 
+apps, from there we can understand one thing that is react is not just for building web applications, if
+it was only for building an web apps then how people used it for building mobile apps or terminal apps as well. 
+
+so from here, let's think react as a UI runtime, it's not just for building web applications, it's for building any kind of UI applications
+Dan Abramov has a great article on this "React is a UI runtime"
+
+<img src="/react/ui-runtime.svg" alt="Confused face" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+I hope you have heard of react-native, react-three-js library somewhere, what they all do? 
+
+we use react-native to build mobile apps and react-three-js to build 3d apps, right? 
+
+are they all created by the react native teams? if not why do we even bother to name so
+
+i would like to break react in two parts one is reconciler and another one is host instance
 
 even if you check the react source code you will see two different package 
 	⁃	react-reconciler 

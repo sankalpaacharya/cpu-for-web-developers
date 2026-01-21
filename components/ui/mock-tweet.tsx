@@ -37,7 +37,6 @@ export const MockTweet = ({
   date = "2013",
   className,
 }: MockTweetProps) => {
-  // Generate a simple avatar with initials if no avatar provided
   const initials = name
     .split(" ")
     .map((n) => n[0])
@@ -49,7 +48,7 @@ export const MockTweet = ({
     <div
       className={cn(
         "relative flex h-fit w-full max-w-lg flex-col gap-4 overflow-hidden rounded-xl border p-5 bg-card",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -62,7 +61,7 @@ export const MockTweet = ({
               className="size-12 rounded-full border border-border/50 object-cover"
             />
           ) : (
-            <div className="flex size-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm">
+            <div className="flex size-12 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm">
               {initials}
             </div>
           )}
