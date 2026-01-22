@@ -5,13 +5,29 @@ date: "2026-02-03"
 topic: "React"
 ---
 
-A lot of my confusion cleared up when I developed the correct mental model for React. It became much easier to understand other concepts, and I want to share what I learned.
+React has been dominating frontend for years now. It’s everywhere web apps, 
+mobile apps, even TVs. But the crazy thing isn’t just where React runs. It’s 
+how everything else started building around it. Whole frameworks exist because of React
 
-We all know React is a UI library, but let's step back and think—what exactly *is* UI?
+<img src="/react/meme.png" alt="Apple UI example" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
-You might say it's the visual surface we interact with: buttons, links, colors, images, layouts, icons, and more.
+To be honest I have been using React for years without even understand what it really is, I knew there exist a react-native
+for building mobile apps and there exists a tons of other react libraries for building on different platform. But I never
+really tried understood how people are using React on different platforms but my doubt of HOW got clear when i understood
+what react truly is. 
 
-# What is UI?
+if you are little curious to know how react is running on different platform then this blog is for you. 
+we build a mental model for what react is and we will unwrap little things here and later we will get glimpse of some core react internal along 
+the way
+
+
+
+# UI as tree
+
+We all know React is a UI library, but let's step back and think _what exactly *is* UI?_
+
+You might say it's the visual surface we interact with: buttons, links, colors, images, layouts, icons, and more. It consists
+of different UI elements.
 
 <img src="/react/apple.png" alt="Apple UI example" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
@@ -35,7 +51,9 @@ For **mobile apps**, we have native components like `View`, `Pressable`, and `Te
 </View>
 ```
 
-For those unfamiliar with mobile development—don't worry! These are just like HTML tags, but for mobile apps.
+
+When working with UI we always have this one Pattern in common either you are building a mobile app, web app or anything
+
 
 No matter if it's mobile or web, they share one common thing: **hierarchy**. Both have a tree-like structure, don't they?
 

@@ -228,3 +228,24 @@
 .animate-scale-in {
   animation: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* Josh Comeau-inspired arrow bullet points */
+.prose ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.prose ul > li {
+  position: relative;
+  padding-left: 1.75rem;
+}
+
+.prose ul > li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: oklch(0.65 0.18 250); /* Blue arrow color */
+  font-weight: 500;
+  font-size: 1.1em;
+}
