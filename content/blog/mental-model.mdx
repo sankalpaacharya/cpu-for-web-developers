@@ -13,7 +13,7 @@ how everything else started building around it. Whole frameworks exist because o
 
 To be honest I have been using React for years without even understand what it really is, I knew there exist a react-native
 for building mobile apps and there exists a tons of other react libraries for building on different platform. But I never
-really tried understood how people are using React on different platforms but my doubt of HOW got clear when i understood
+really tried understanding how people are using React on different platforms but my doubt of HOW got clear when i understood
 what react truly is. 
 
 if you are little curious to know how react is running on different platform then this blog is for you. 
@@ -51,11 +51,40 @@ For **mobile apps**, we have native components like `View`, `Pressable`, and `Te
 </View>
 ```
 
+When working with UI we always have this one pattern in common either you are building a mobile app, web app or anything
 
-When working with UI we always have this one Pattern in common either you are building a mobile app, web app or anything
+it's the hirecy between the UI elements, you have `button`, `img` inside `div` or `Image` `Pressable` inside `View` they all
+form a tree like structure.
+
+ <UserCardDemo/>
+
+```zsh
+Card
+ ├─ CardContent
+ │    └─ p
+ └─ CardFooter
+      ├─ Avatar
+      ├─ UserInfo
+      │    ├─ CardTitle
+      │    └─ CardDescription
+      └─ StarIcon
+
+```
 
 
-No matter if it's mobile or web, they share one common thing: **hierarchy**. Both have a tree-like structure, don't they?
+
+
+
+
+
+this explain later not rn 
+
+but maybe that also begs a question, we know some library like `react-three-fiber` they don't always render the UI in tree format 
+it's a html canvas and webgl
+
+if you are not familar with html canvas or webgl no it's, canvas is just like a blank paper 
+
+
 
 # React for Different Platforms
 

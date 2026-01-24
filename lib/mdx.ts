@@ -11,6 +11,7 @@ import { Code } from "@/components/ui/code";
 import { Scrollycoding } from "@/components/ui/scrollycoding";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { UserGroupIcon, CheckmarkBadge01Icon, NoteIcon } from "@hugeicons/core-free-icons";
+import { UserCardDemo } from "@/components/user-card";
 
 import premiumTheme from "./premium-theme.json";
 
@@ -37,6 +38,7 @@ const mdxComponents = {
   UserGroup,
   CheckmarkBadge,
   Note,
+  UserCardDemo,
 };
 
 const CONTENT_DIR = path.join(process.cwd(), "content/blog");
@@ -103,7 +105,7 @@ export async function getPostBySlug(slug: string): Promise<PostWithContent | nul
   }
 
   let source = fs.readFileSync(filePath, "utf-8");
-  
+
   // Auto-wrap content in Scrollycoding if it contains !!steps blocks
   // This allows MDX files to just use !!steps syntax without explicit wrapper
   if (source.includes('## !!steps') && !source.includes('<Scrollycoding>')) {
@@ -148,13 +150,13 @@ export function isScrollyPost(slug: string): boolean {
     return false;
   }
   const source = fs.readFileSync(filePath, "utf-8");
-  
+
   // Split frontmatter and content
   const parts = source.split('---');
   if (parts.length < 3) return false;
-  
+
   const content = parts.slice(2).join('---').trim();
-  
+
   // Only return true if the post is PURELY scrolly (starts with !!steps)
   // If it has mixed content (prose before scrolly), return false
   return content.startsWith('## !!steps');
