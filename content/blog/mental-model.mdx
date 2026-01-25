@@ -74,11 +74,6 @@ Every UI element can be created, updated, or removed using platform-specific imp
 Each platform exposes its own APIs for managing UI elements.
 
 
-React do the simple thing, it represents your UI in tree like structure internally and uses the APIs to manage the UI elements.
-If there is a state change in the application it will go which part needs to be `created`, `updated`, `deleted` and once it 
-figures out, it creates a new UI tree and it will use the APIs to make changes. It is doing nothing much but just keeping your data and UI in sync.
-
-
 
 
 <Sandpack
@@ -183,11 +178,39 @@ button.decrement:hover {
 
 In the above example, if you take a look we have a `Text` component and a `CounterApp` component, we are passing `count` into a `Text` component via _props_
 
-React already has already made a UI tree with itself in memory when initially components where mount, it knows how your UI looks like, where is your `Text` component how many states you have inside that component, how many `props` is passed into that component, it has all information about your UI from tip to tail in a complex 
-data structure
+React already has already made a UI tree with itself in memory when initially components where mount, it has all information about your UI from tip to tail in a complex 
+data structure called `fiber`, your each DOM node is represented as `FiberNode` internally
 
-When you click the `Increment` buttons inside the `CounterApp` the state is changed, It will be like _ah something has changed, i need to update_, _I already have this 
-UI tree_
+
+```tsx 
+function FiberNode(
+  this: $FlowFixMe,
+  tag: WorkTag,        // Type of Fiber (FunctionComponent, ClassComponent, HostComponent, etc.)
+  pendingProps: mixed, // New props waiting to be applied
+  key: ReactKey,       // Unique key used for reconciliation in lists
+  mode: TypeOfMode,    // Fiber mode (ConcurrentMode, StrictMode, etc.)
+) {
+  this.tag = tag; // Fiber type
+  this.key = key;// React key for reconciliation
+  this.elementType = null; // Original element type (JSX type)
+  this.type = null;  // Resolved component type (function/class/host)
+
+  this.return = null;  // Parent Fiber
+  this.child = null;   // First child Fiber
+  this.sibling = null; // Next sibling Fiber
+
+  ...
+
+  this.updateQueue = null; // Queue of state updates (class components)
+  this.memoizedState = null; // State from last render (functional components)
+
+  ...
+}
+
+
+```
+When you click the Increment button in the CounterApp, you are basically calling `setCount` function to increment the value. React notices that the state has changed. 🧐
+It then re-runs the affected components to build a new updated UI tree in memory, representing how the UI should look now.
 
 ```bash
 Before click (count = 0)
@@ -198,7 +221,7 @@ CounterApp
       └─ span: "Count: 0"
 ```
 
-_but it's not updated, let me see what to update and I will make new UI tree_, _oh i got it, it's the `Text` Component_. _Good, Now I have this new UI tree with me_
+React then “compares snapshots”: the new UI tree(fiber) vs the old UI tree(fiber). It quickly figures out what actually changed. In this case, only the Text component’s span needs to update  everything else is the same.
 
 ```bash 
 After click (count = 1)
@@ -208,26 +231,46 @@ CounterApp
  └─ Text
       └─ span: "Count: 1"
 ```
+up intill this point we have nothing to do with DOM manupliation, we are just playing with that complex 
+fiber data structure which is a look alike of our UI, when we compared two UI tree and figured out 
+_only the Text component’s span needs to update  everything else is the same_.
 
+Now we only know what to do but we haven't done it yet So out next step is making change in the DOM now
 
-_but the screen is still the old one_
+Notice that the screen still shows the old value at this point:
 
 
 <img src="/react/oldui.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
-_now let me use this API and update the screen as well_
+React then uses the platform specific APIs in our case DOM, to bring the UI on the screen in sync with the new tree:
 
 ```js
 textNode.nodeValue = "1"
 
 ```
 
+
 <img src="/react/newui.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 
-Now this begs a question: are we really creating a completely new UI every time state changes? Not at all. That would be super inefficient.
+from what we saw, we can guess one thing react is working on two phases
+- comparing old UI tree and new UI tree and finding the difference, what changed
+- making change in the dom
 
-React is smart. It figures out exactly what needs to change by comparing the new UI tree with the old one. You saw above that we only needed `textNode.nodeValue` to update the value. We did not recreate the whole UI from scratch.
+## Why do diffing ? 
+
+Why check two UI trees? if we already have a new updated UI tree why not just make a UI using that? why need
+to check the difference?
+
+Because creating UI from scratch means we are adding DOM elements again on screen which is a heavy operation, 
+browser have to go through style re-calculation, layout(reflow), re-paint, compositing etc 
+
+Read _[How Browsers Work](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work)_
+
+It's not just about single element if we have complex UI then we would need to create thousands of DOM nodes again
+
+<img src="/react/chess.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
 
 This is where the diffing algorithm comes in. It finds the minimal part of the UI that needs updating so we are not unnecessaryly doing things
 
@@ -290,30 +333,32 @@ If you check the [react source code](https://github.com/facebook/react/tree/main
 <img src="/react/react-source-code.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 
-# React Reconciler
+# react-reconciler
 
-Earlier we dicussed how re-creating the whole UI can be inefficient so we only change what is needed, so how will
-we decide what is only needed? It's the reconcillation process which helps us do that
+Now this reconciler package consist for handling your props, state, effects, lifecycles, concurrent mode, context etc it re-runs your component and builds a new UI tree, compare it with old one and come with an effects(decission): update this text, remove this div, insert that button etc  It doesn't do anything with the DOM node
 
-React Reconciler is a core React, which does the diffing, all the computation and tells how our UI should look like
-now, it doesn't care about Host instance, it just outputs the UI tree and now it's the job of another program 
-to take that UI tree and use the platform specific API and display on screen. 
+<img src="/react/difference.jpg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
-Reconciler is taking your UI and building a complex UI tree and when there is a state update it will generate 
-a new updated UI tree and checks between them
 
-<ReconcileDemo />
 
-# Host Instance (react-dom)
+
+
+
+# react-dom (host Instance)
 
 Host instance is the underlying DOM node (or native view in React Native) that React manages. 
 
-What we saw earlier
-is react has this internal UI tree with itself in memory and once it creates a new UI tree it compares it with the 
-old one and make changes, so in order to make changes in the screen it has to use the platform specific API
+All the time i have been talking about UI elements, UI elements it's not but just a host instance.
 
-Host instance can be anything, either DOM nodes or [native view]() or [PDF primitives](https://react-pdf.com) it can be anything depending  on the platform we are.
+Host instance can be anything, either DOM nodes or [native view]() or [PDF primitives](https://react-pdf.org) it can be anything depending  on the platform we are.
 
+# Split
+
+This split helps us to re-use the Reconcilation logic on different platform as well, it's like _hey I know what to
+update, when to update, how efficiently update let that on me, you(host renderer) just tell me how can i create, update, delete UI elements for your platform, just give me those APIs_
+
+it becomes learn once 
+and apply everywhere. you can use same hooks `useState` `useEffect` same function component and same logic but on different platform where your UI is not a DOM node rather native mobile component, or canvas or anything
 
 It's like we have two puzzle pieces, 
 
