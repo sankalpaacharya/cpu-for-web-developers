@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { getPostBySlug, getAllPostSlugs, isScrollyPost } from "@/lib/mdx";
+import { getPostBySlug } from "@/lib/mdx";
+import { getAllPostSlugs, isScrollyPost } from "@/lib/mdx-data";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 
