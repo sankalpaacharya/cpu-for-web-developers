@@ -70,18 +70,22 @@
 
 .dark {
   /* Premium reading experience - inspired by overreacted.io */
-  --background: oklch(0.145 0.006 285); /* Deeper dark with subtle purple undertone */
-  --foreground: oklch(0.92 0.015 75); /* Warm cream white for comfortable reading */
+  --background: oklch(0.145 0.006 285);
+  /* Deeper dark with subtle purple undertone */
+  --foreground: oklch(0.92 0.015 75);
+  /* Warm cream white for comfortable reading */
   --card: oklch(0.18 0.006 285);
   --card-foreground: oklch(0.92 0.015 75);
   --popover: oklch(0.20 0.006 285);
   --popover-foreground: oklch(0.92 0.015 75);
-  --primary: oklch(0.72 0.14 30); /* Softer warm coral - refined orange */
+  --primary: oklch(0.72 0.14 30);
+  /* Softer warm coral - refined orange */
   --primary-foreground: oklch(0.15 0 0);
   --secondary: oklch(0.22 0.006 285);
   --secondary-foreground: oklch(0.92 0.015 75);
   --muted: oklch(0.22 0.006 285);
-  --muted-foreground: oklch(0.62 0.02 60); /* Warmer muted for better readability */
+  --muted-foreground: oklch(0.62 0.02 60);
+  /* Warmer muted for better readability */
   --accent: oklch(0.30 0.008 285);
   --accent-foreground: oklch(0.92 0.015 75);
   --destructive: oklch(0.7040 0.1910 22.2160);
@@ -180,6 +184,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -191,6 +196,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -201,9 +207,14 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
+}
+
+img {
+  border-radius: 10px;
 }
 
 @keyframes scale-in {
@@ -211,6 +222,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -235,17 +247,18 @@
   padding-left: 0;
 }
 
-.prose ul > li {
+.prose ul>li {
   position: relative;
   padding-left: 1.75rem;
 }
 
-.prose ul > li::before {
+.prose ul>li::before {
   content: '→';
   position: absolute;
   left: 0;
   top: 0;
-  color: oklch(0.65 0.18 250); /* Blue arrow color */
+  color: oklch(0.65 0.18 250);
+  /* Blue arrow color */
   font-weight: 500;
   font-size: 1.1em;
 }

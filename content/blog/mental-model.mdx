@@ -5,26 +5,26 @@ date: "2026-02-03"
 topic: "React"
 ---
 
-React has been dominating frontend for years now. It’s everywhere web apps, 
-mobile apps, even TVs. But the crazy thing isn’t just where React runs. It’s 
-how everything else started building around it. Whole frameworks exist because of React
+We build web apps with React. We build mobile apps with React. We even build 3D apps with React. And yet,
+we write the same kind of code everywhere the same `useState` and `useEffect` hooks, the same function components,
+the same mental model.
+
+Now this raises an interesting question 🤔: how does the same React code run on such different platforms? A web app uses the DOM, a mobile
+app uses native views, and a 3D app might use canvas or WebGL. These systems have completely different
+ways of drawing UI.
 
 <img src="/react/meme.png" alt="Apple UI example" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
-To be honest I have been using React for years without even understand what it really is, I knew there exist a react-native
-for building mobile apps and there exists a tons of other react libraries for building on different platform. But I never
-really tried understanding how people are using React on different platforms but my doubt of HOW got clear when i understood
-what react truly is. 
+I have been using React for years without even understanding what it really is. I knew about React Native for building mobile apps, and there are a ton of other React libraries for different platforms, but I never really tried to understand how people were using React across platforms. My curiosity about how it all works was finally satisfied when I understood what React truly is.
 
-if you are little curious to know how react is running on different platform then this blog is for you. 
-we build a mental model for what react is and we will unwrap little things here and later we will get glimpse of some core react internal along 
-the way
+For this blog i just want to shape the mental model of what react is without giving too much about react internals.
 
-
+If you are a little curious about how React runs on different platforms,
+then this blog is for you. We will build a mental model for what React is, unwrap small pieces step by step.
 
 # UI as tree
 
-We all know React is a UI library, but let's step back and think _what exactly *is* UI?_
+We all know React is a UI library, but let's step back and think *what exactly *is* UI?*
 
 You might say it's the visual surface we interact with: buttons, links, colors, images, layouts, icons, and more. It consists
 of different UI elements.
@@ -51,12 +51,10 @@ For **mobile apps**, we have native components like `View`, `Pressable`, and `Te
 </View>
 ```
 
-When working with UI we always have this one pattern in common either you are building a mobile app, web app or anything
+When working with UI, we always see the same pattern, whether we are building a mobile app, web app, or anything else: the **hierarchy between UI elements**. 
+You have `button` and `img` inside a `div` or `Image` and `Pressable` inside a `View`; they all form a tree-like structure.
 
-it's the hirecy between the UI elements, you have `button`, `img` inside `div` or `Image` `Pressable` inside `View` they all
-form a tree like structure.
-
- <UserCardDemo/>
+<UserCardDemo/>
 
 ```zsh
 Card
@@ -68,218 +66,241 @@ Card
       │    ├─ CardTitle
       │    └─ CardDescription
       └─ StarIcon
-
 ```
-Every UI element can be created, updated, or removed using platform-specific imperative APIs. For example, the DOM uses `appendChild`, while iOS uses `addSubview`.
-Each platform exposes its own APIs for managing UI elements.
 
 
+To understand more things let's first understand how react is structured
 
+# React in Two Parts
+
+React can be thought of as **two separate pieces**:
+
+<img src="/react/two parts.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+* **Reconciler** – the part that compares UI trees and decides what needs to change (diffing algorithm)
+* **Host Instance** – the platform-specific renderer (DOM nodes, native views, etc.)
+
+This distinction is crucial for understanding how React works across multiple platforms. React is not just a UI library; it’s more like a **UI runtime**.
+
+<img src="/react/ui-runtime.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+If you check the [React source code](https://github.com/facebook/react/tree/main/packages), you’ll see two separate packages: `react-reconciler` and `react-dom`.
+these two packages are the one you use to build your web apps
+
+<img src="/react/react-source-code.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+# react-reconciler
+
+The reconciler handles your props, state, effects, lifecycles, concurrent mode, context, etc. Reconciler is the brain of react, it does all
+the magic calculation and give the output to renderer
+
+Let's look at an example
 
 <Sandpack
-  template="react"
-  files={{
-    "/App.js": `import { useState } from "react";
+template="react"
+files={{
+"/App.js": `import { useState } from "react";
 
 export default function CounterApp() {
-  const [count, setCount] = useState(0);
-  return (
-    <div className="container">
-      <div className="counter">
-        <h3>Counter App</h3>
-        <Text count={count} />
-      </div>
-      <div className="buttons">
-        <button 
-          className="decrement"
-          onClick={() => setCount(count - 1)}
-        >
-          Decrement
-        </button>
-        <button 
-          onClick={() => setCount(count + 1)}
-        >
-          Increment
-        </button>
-      </div>
-    </div>
-  );
+const [count, setCount] = useState(0);
+return ( <div className="container"> <div className="counter"> <h3>Counter App</h3> <Text count={count} /> </div> <div className="buttons">
+<button
+className="decrement"
+onClick={() => setCount(count - 1)}
+>
+Decrement </button>
+<button
+onClick={() => setCount(count + 1)}
+>
+Increment </button> </div> </div>
+);
 }
 
 function Text({ count }) {
-  return <span className="count">Count: {count}</span>;
+return <span className="count">Count: {count}</span>;
 }
 `,
     "/styles.css": `.container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 32px;
-  font-family: system-ui, sans-serif;
-  max-width: 320px;
-  margin: 0 auto;
-  align-items: center;
+display: flex;
+flex-direction: column;
+gap: 24px;
+padding: 32px;
+font-family: system-ui, sans-serif;
+max-width: 320px;
+margin: 0 auto;
+align-items: center;
 }
 
 .counter {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 8px;
 }
 
 h3 {
-  margin: 0;
-  color: #666;
-  font-size: 1.125rem;
-  font-weight: 500;
+margin: 0;
+color: #666;
+font-size: 1.125rem;
+font-weight: 500;
 }
 
 .count {
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-family: monospace;
+font-size: 1.5rem;
+font-weight: 700;
+font-family: monospace;
 }
 
 .buttons {
-  display: flex;
-  gap: 16px;
+display: flex;
+gap: 16px;
 }
 
 button {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  color: #0f172a;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+padding: 8px 16px;
+border-radius: 6px;
+border: 1px solid #e2e8f0;
+background: white;
+color: #0f172a;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.2s;
 }
 
 button:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+background: #f8fafc;
+border-color: #cbd5e1;
 }
 
 button.decrement {
-  color: #ef4444;
-  border-color: #fee2e2;
-  background: #fef2f2;
+color: #ef4444;
+border-color: #fee2e2;
+background: #fef2f2;
 }
 
 button.decrement:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
+background: #fee2e2;
+border-color: #fca5a5;
 }
 `
-  }}
+}}
 />
 
-In the above example, if you take a look we have a `Text` component and a `CounterApp` component, we are passing `count` into a `Text` component via _props_
+In this example, we have a `Text` component and a `CounterApp` component. We are passing count into the `Text` component via props.
 
-React already has already made a UI tree with itself in memory when initially components where mount, it has all information about your UI from tip to tail in a complex 
-data structure called `fiber`, your each DOM node is represented as `FiberNode` internally
+when you first run this code, reconciler internally makes a UI tree for itself, it has no idea about the DOM. It just took your jsx components 
+files and built a UI tree 
 
+for those of you who has some idea of react internals, yes it's the `fiber` object
 
-```tsx 
-function FiberNode(
-  this: $FlowFixMe,
-  tag: WorkTag,        // Type of Fiber (FunctionComponent, ClassComponent, HostComponent, etc.)
-  pendingProps: mixed, // New props waiting to be applied
-  key: ReactKey,       // Unique key used for reconciliation in lists
-  mode: TypeOfMode,    // Fiber mode (ConcurrentMode, StrictMode, etc.)
-) {
-  this.tag = tag; // Fiber type
-  this.key = key;// React key for reconciliation
-  this.elementType = null; // Original element type (JSX type)
-  this.type = null;  // Resolved component type (function/class/host)
+<img src="/react/card.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
-  this.return = null;  // Parent Fiber
-  this.child = null;   // First child Fiber
-  this.sibling = null; // Next sibling Fiber
-
-  ...
-
-  this.updateQueue = null; // Queue of state updates (class components)
-  this.memoizedState = null; // State from last render (functional components)
-
-  ...
-}
+When state updates happen, React continues to work only with this in-memory UI tree. It does not directly touch the DOM while figuring out what changed.
 
 
-```
-When you click the Increment button in the CounterApp, you are basically calling `setCount` function to increment the value. React notices that the state has changed. 🧐
-It then re-runs the affected components to build a new updated UI tree in memory, representing how the UI should look now.
-
-```bash
-Before click (count = 0)
-
-CounterApp
- ├─ h3: "Counter App"
- └─ Text
-      └─ span: "Count: 0"
-```
-
-React then “compares snapshots”: the new UI tree(fiber) vs the old UI tree(fiber). It quickly figures out what actually changed. In this case, only the Text component’s span needs to update  everything else is the same.
-
-```bash 
-After click (count = 1)
-
-CounterApp
- ├─ h3: "Counter App"
- └─ Text
-      └─ span: "Count: 1"
-```
-up intill this point we have nothing to do with DOM manupliation, we are just playing with that complex 
-fiber data structure which is a look alike of our UI, when we compared two UI tree and figured out 
-_only the Text component’s span needs to update  everything else is the same_.
-
-Now we only know what to do but we haven't done it yet So out next step is making change in the DOM now
-
-Notice that the screen still shows the old value at this point:
+<img src="/react/clicked.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 
-<img src="/react/oldui.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+When you click the `increment` button you just called a `setCount` function to change the state. what we did here is just 
+we requested to the reconciler to re-render our component. well you don't directly request to reconciler through your code it's just the 
+how internally works. all you did is just called `setCount` function and what's what triggered the re-render
 
-React then uses the platform specific APIs in our case DOM, to bring the UI on the screen in sync with the new tree:
+
+now reconciler will create a new updated UI tree re-running your relavent component with new state value.
+
+<img src="/react/cardnew.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+once the new UI tree is created it compares the old UI tree and new UI tree
+
+<img src="/react/compare.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+
+after the comparession it comes with the conolusion(effects), _we have everything same, `button`, `h3` and other component looks fine so we don't need to touch them 
+only the text in the span tag needs an update_ 
+
+reconciler just came with a list of effects need to be done on DOM but it itself doesn't do that, if you notice it doesn't even know there is something called `DOM` it's just happy with it's in 
+memory UI tree
+
+
+
+# react-dom (Host Renderer)
+
+Now, once we have the list of effects, _what to dos_ it's the work of host-renderer to take those effects and apply them.
+
+Every UI element can be created, updated, or removed using **platform-specific imperative APIs**. For example, the DOM uses `appendChild`, while iOS uses `addSubview`.
+
+react-dom uses the DOM APIs to work with those effects given by the reconciler, it does the work of updating text removing element or creating an element
+in our example we simply update the `textNode` in the `span` tag
 
 ```js
 textNode.nodeValue = "1"
-
 ```
 
+The host instance is the actual DOM node (or native view in React Native) that React manages. Depending on the platform, the host instance can be:
 
-<img src="/react/newui.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+* DOM nodes (Web)
+* Native views (iOS/Android)
+* PDF primitives ([React PDF](https://react-pdf.org))
+* Canvas, WebGL, or anything else
+
+# Why this split matters
+
+This separation allows React to reuse the same reconciliation logic across platforms. Think of it like this:
+
+_I know what changed. how to update effectively what needs to be done, i will give you the list of work to be done on UI, you host-renderer do the rest_
+
+This is why you can **use the same hooks (`useState`, `useEffect`) and function components everywhere**, whether the platform is DOM, mobile native components, or canvas.
 
 
-from what we saw, we can guess one thing react is working on two phases
-- comparing old UI tree and new UI tree and finding the difference, what changed
-- making change in the dom
+## react-ink
 
-## Why do diffing ? 
+react-link is a another react-renderer for building a terminal apps
 
-Why check two UI trees? if we already have a new updated UI tree why not just make a UI using that? why need
-to check the difference?
+```tsx 
 
-Because creating UI from scratch means we are adding DOM elements again on screen which is a heavy operation, 
-browser have to go through style re-calculation, layout(reflow), re-paint, compositing etc 
+import React, {useState, useEffect} from 'react';
+import {render, Text} from 'ink';
 
-Read _[How Browsers Work](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work)_
+const Counter = () => {
+	const [counter, setCounter] = useState(0);
 
-It's not just about single element if we have complex UI then we would need to create thousands of DOM nodes again
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setCounter(previousCounter => previousCounter + 1);
+		}, 100);
+
+		return () => {
+			clearInterval(timer);
+		};
+	}, []);
+
+	return <Text color="green">{counter} tests passed</Text>;
+};
+
+render(<Counter />);
+
+```
+<img src="/react/demo.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+you can use the same power of react which is `functional component`, `hooks`, `jsx syntax` etc but now the output is not a DOM nodes rather a terminal UI. 
+
+so host renderer decided how to draw and reconciler gives the optimal answer of what to draw and where to draw 🤯
+
+
+# Why diffing?
+
+Why not just create the new UI from scratch? Because adding elements to the DOM is expensive. Browsers must handle style recalculation, layout (reflow), repaint, and compositing. For complex UIs, creating thousands of elements repeatedly is costly.
 
 <img src="/react/chess.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
+The diffing algorithm finds **only the minimal part of the UI that needs updating**, avoiding unnecessary operations.
 
-This is where the diffing algorithm comes in. It finds the minimal part of the UI that needs updating so we are not unnecessaryly doing things
 
-> Remember this part clearly, it first finds what needs to be change and then go and make changes on screen.
+# What if no React?
 
-## What if no React ?
-React is a declarative UI library that automatically syncs application state with the rendered UI.
+React is a declarative UI library that automatically syncs state with the rendered UI.
 
-```js 
+```js
 const el = document.createElement("div")
 el.textContent = count
 document.body.appendChild(el)
@@ -288,83 +309,28 @@ button.addEventListener("click", () => {
   count++
   el.textContent = count
 })
-
 ```
 
-if you were to use the DOM APIs you were responsible for  
-- creating elements
-- updating text
-- wiring updates
-- keeping everything in sync
+Without React, you’d manually handle:
 
-but with our above counter app we never did that right? we didn't care about creating element, finding element, updating text node, React did that for us
+* Creating elements
+* Updating text
+* Wiring updates
+* Keeping everything in sync
 
+With React, you simply say:
 
-you only say "_When state is `count`, the UI should look like this_". React will figure out when to re-render, 
-what changed, how to update the real UI. We will discuss in depth how it does and everything in later 
-blog in this series
+> “When state is `count`, the UI should look like this.”
 
+React figures out when to re-render, what changed, and how to update the real UI.
 
-## Summary
+# Summary
 
-UI on any platform forms a tree like structure. React keeps its own version of this UI tree in memory.
+UI on any platform forms a **tree structure**. React keeps its own version of this tree in memory. When state changes, React builds a new tree, compares it with the old one, and updates **only what actually changed** using platform-specific APIs.
 
-When state changes, React first builds a new tree, compares it with the old one, and figures out what actually changed. Only then does it use platform specific APIs to update the real screen.
-
-This is how React keeps your data and UI in sync, without you manually touching the DOM or native APIs.
-
-
-# React in Two Parts
-
-Let's divide react into two parts
-
-<img src="/react/two parts.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
-
--  **Reconciler**  the diffing algorithm
-- **Host Instance**  the platform-specific renderer
-
-This distinction is important for us to understand how react is working on multiple platforms, and how react is
-just not a UI library but it's a _UI as a runtime_
-
-<img src="/react/ui-runtime.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
-
-If you check the [react source code](https://github.com/facebook/react/tree/main/packages), there is a two seperate packages `react-reconciler` and `react-dom`
-
-<img src="/react/react-source-code.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
-
-
-# react-reconciler
-
-Now this reconciler package consist for handling your props, state, effects, lifecycles, concurrent mode, context etc it re-runs your component and builds a new UI tree, compare it with old one and come with an effects(decission): update this text, remove this div, insert that button etc  It doesn't do anything with the DOM node
-
-<img src="/react/difference.jpg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
-
-
-
-
-
-
-# react-dom (host Instance)
-
-Host instance is the underlying DOM node (or native view in React Native) that React manages. 
-
-All the time i have been talking about UI elements, UI elements it's not but just a host instance.
-
-Host instance can be anything, either DOM nodes or [native view]() or [PDF primitives](https://react-pdf.org) it can be anything depending  on the platform we are.
-
-# Split
-
-This split helps us to re-use the Reconcilation logic on different platform as well, it's like _hey I know what to
-update, when to update, how efficiently update let that on me, you(host renderer) just tell me how can i create, update, delete UI elements for your platform, just give me those APIs_
-
-it becomes learn once 
-and apply everywhere. you can use same hooks `useState` `useEffect` same function component and same logic but on different platform where your UI is not a DOM node rather native mobile component, or canvas or anything
-
-It's like we have two puzzle pieces, 
+This is how React keeps your data and UI in sync, without manually touching the DOM or native APIs.
 
 <img src="/react/host.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
-
-
 
 <img src="/react/connected.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 

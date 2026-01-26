@@ -13,6 +13,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { UserGroupIcon, CheckmarkBadge01Icon, NoteIcon } from "@hugeicons/core-free-icons";
 import { UserCardDemo } from "@/components/mental-model/user-card";
 import ReconcileDemo from "@/components/mental-model/reconcile-animation";
+import { IntendedAudience } from "@/components/ui/intended-audience";
 
 import { chConfig, Post, PostFrontmatter } from "./mdx-data";
 
@@ -33,6 +34,7 @@ const mdxComponents = {
   Note,
   UserCardDemo,
   ReconcileDemo,
+  IntendedAudience,
 };
 
 const CONTENT_DIR = path.join(process.cwd(), "content/blog");
