@@ -68,8 +68,8 @@ Card
       └─ StarIcon
 ```
 
+React does nothing special here. It represents the UI as a tree because that is already how UI exists in reality. Browser DOM nodes form a tree. Native mobile views also form a tree. UI is inherently hierarchical. React is not inventing a new structure, it is simply aligning its internal model with how platforms already work.
 
-React does nothing different it represents your UI in tree as well internally, To understand how this works, let's first understand how React is structured
 
 # React in Two Parts
 
@@ -188,8 +188,9 @@ border-color: #fca5a5;
 
 In this example, we have a `Text` component and a `CounterApp` component. We are passing count into the `Text` component via props.
 
-When you first run this code, the reconciler internally makes a UI tree for itself; it has no idea about the DOM. It just takes your JSX component 
-files and builds a UI tree 
+When this code runs for the first time, the reconciler builds its own internal representation of the UI as a tree. At this stage, React has no knowledge of the DOM or any native view system. It simply takes your JSX components and turns them into a platform-agnostic UI tree.
+
+This tree does not follow the browser DOM structure or any specific native view hierarchy. Instead, it is React’s own generic representation of the UI, designed to be mapped later to whatever platform is rendering it.
 
 For those of you who have some idea of React internals, yes, it's the `fiber` object
 
@@ -206,7 +207,7 @@ we request the reconciler to re-render our component. Well, you don't directly r
 how it works internally. All you did was call the `setCount` function, and that's what triggered the re-render
 
 
-Now, the reconciler will create a new, updated UI tree by re-running your relevant component with the new state value.
+Now, the reconciler will create a new updated UI tree by re-running your relevant component with the new state value.
 
 <img src="/react/cardnew.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
@@ -220,6 +221,14 @@ Only the text in the span tag needs an update._
 
 The reconciler just produced a list of effects that need to be applied to the DOM, but it doesn't apply them itself. In fact, it doesn't even know what the DOM is; it's just happy with its in-
 memory UI tree
+
+# Why diffing?
+
+Why not just create the new UI from scratch if we have a new UI tree? Because adding elements to the DOM is expensive. Browsers must handle style recalculation, layout (reflow), repaint, and compositing. For complex UIs, creating thousands of elements repeatedly is costly.
+
+<img src="/react/chess.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+The diffing algorithm finds **only the minimal part of the UI that needs updating**, avoiding unnecessary operations.
 
 
 
@@ -285,15 +294,6 @@ render(<Counter />);
 You can use the same power of React, which includes `functional components`, `hooks`, `JSX syntax`, etc., but now the output is not DOM nodes, but rather a terminal UI. 
 
 So, the host renderer decides how to draw, and the reconciler provides the optimal answer of what to draw and where to draw 🤯
-
-
-# Why diffing?
-
-Why not just create the new UI from scratch? Because adding elements to the DOM is expensive. Browsers must handle style recalculation, layout (reflow), repaint, and compositing. For complex UIs, creating thousands of elements repeatedly is costly.
-
-<img src="/react/chess.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
-
-The diffing algorithm finds **only the minimal part of the UI that needs updating**, avoiding unnecessary operations.
 
 
 # What if no React?

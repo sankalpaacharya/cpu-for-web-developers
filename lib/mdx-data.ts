@@ -20,6 +20,7 @@ export interface PostFrontmatter {
     date: string;
     topic: string;
     image: string;
+    draft?: boolean;
 }
 
 export interface Post {
@@ -56,19 +57,25 @@ export async function getAllPosts(): Promise<Post[]> {
             })
     );
 
+    // Filter out drafts in production
+    const filteredPosts = posts.filter((post) => {
+        if (process.env.NODE_ENV === "production") {
+            return !post.frontmatter.draft;
+        }
+        return true;
+    });
+
     // Sort by date (newest first)
-    return posts.sort((a, b) => {
+    return filteredPosts.sort((a, b) => {
         const dateA = new Date(a.frontmatter.date);
         const dateB = new Date(b.frontmatter.date);
         return dateB.getTime() - dateA.getTime();
     });
 }
 
-export function getAllPostSlugs(): string[] {
-    const files = fs.readdirSync(CONTENT_DIR);
-    return files
-        .filter((file) => file.endsWith(".mdx"))
-        .map((file) => file.replace(/\.mdx$/, ""));
+export async function getAllPostSlugs(): Promise<string[]> {
+    const posts = await getAllPosts();
+    return posts.map((post) => post.slug);
 }
 
 export function isScrollyPost(slug: string): boolean {
