@@ -13,7 +13,7 @@ Now this raises an interesting question 🤔: how does the same React code run o
 app uses native views, and a 3D app might use canvas or WebGL. These systems have completely different
 ways of drawing UI.
 
-<img src="/react/meme.png" alt="Apple UI example" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/meme.png" alt="Apple UI example" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 I have been using React for years without even understanding what it really is. I knew about React Native for building mobile apps, and there are tons of other React libraries for different platforms, but I never really tried to understand how people were using React across platforms. My curiosity about how it all works was finally satisfied when I understood what React truly is.
 
@@ -29,7 +29,7 @@ We all know React is a UI library, but let's step back and think *what exactly *
 You might say it's the visual surface we interact with: buttons, links, colors, images, layouts, icons, and more. It consists
 of different UI elements.
 
-<img src="/react/apple.png" alt="Apple UI example" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/apple.png" alt="Apple UI example" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 For the **web**, we use HTML tags like `<div>`, `<button>`, `<a>`, `<img>` to create UI elements
 
@@ -75,19 +75,19 @@ React does nothing special here. It represents the UI as a tree because that is 
 
 React can be thought of as **two separate pieces**:
 
-<img src="/react/two parts.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/two parts.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 * **Reconciler** – the part that compares UI trees and decides what needs to change (diffing algorithm)
 * **Host Instance** – the platform-specific renderer (DOM nodes, native views, etc.)
 
 This distinction is crucial for understanding how React works across multiple platforms. React is not just a UI library it’s more like a **UI runtime**.
 
-<img src="/react/ui-runtime.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/ui-runtime.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 If you check the [React source code](https://github.com/facebook/react/tree/main/packages), you’ll see two separate packages: `react-reconciler` and `react-dom`.
 These two packages are the ones you use to build your web apps.
 
-<img src="/react/react-source-code.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/react-source-code.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 # react-reconciler
 
@@ -194,12 +194,12 @@ This tree does not follow the browser DOM structure or any specific native view 
 
 For those of you who have some idea of React internals, yes, it's the `fiber` object
 
-<img src="/react/card.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/card.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 When state updates happen, React continues to work only with this in-memory UI tree. It does not directly touch the DOM while figuring out what changed.
 
 
-<img src="/react/clicked.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/clicked.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 
 When you click the `increment` button, you call the `setCount` function to change the state. What happens here is that 
@@ -209,11 +209,11 @@ how it works internally. All you did was call the `setCount` function, and that'
 
 Now, the reconciler will create a new updated UI tree by re-running your relevant component with the new state value.
 
-<img src="/react/cardnew.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/cardnew.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 Once the new UI tree is created, it compares the old UI tree with the new UI tree
 
-<img src="/react/compare.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/compare.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 
 After the comparison, it comes to a conclusion (effects): _we have everything the same `button`, `h3`, and other components look fine, so we don't need to touch them.
@@ -226,7 +226,7 @@ memory UI tree
 
 Why not just create the new UI from scratch if we have a new UI tree? Because adding elements to the DOM is expensive. Browsers must handle style recalculation, layout (reflow), repaint, and compositing. For complex UIs, creating thousands of elements repeatedly is costly.
 
-<img src="/react/chess.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/chess.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 The diffing algorithm finds **only the minimal part of the UI that needs updating**, avoiding unnecessary operations.
 
@@ -287,7 +287,7 @@ const Counter = () => {
 render(<Counter />);
 
 ```
-<img src="/react/demo.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+<img src="/blog/running-react-on-different-platform/demo.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
 You can use the same power of React, which includes `functional components`, `hooks`, `JSX syntax`, etc., but now the output is not DOM nodes, but rather a terminal UI. 
 

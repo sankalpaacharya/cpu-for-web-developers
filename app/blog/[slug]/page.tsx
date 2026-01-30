@@ -18,9 +18,32 @@ export async function generateMetadata({
   const post = await getPostBySlug(slug);
   if (!post) return {};
 
+  const title = `${post.frontmatter.title} | Sanku's Blog`;
+  const description = post.frontmatter.description;
+  const url = `https://sanku.blog/blog/${slug}`;
+
   return {
-    title: `${post.frontmatter.title} | Sanku's Blog`,
-    description: post.frontmatter.description,
+    title,
+    description,
+    openGraph: {
+      title: post.frontmatter.title,
+      description,
+      url,
+      siteName: "Sanku's Blog",
+      type: "article",
+      publishedTime: post.frontmatter.date,
+      authors: ["Sanku"],
+      tags: [post.frontmatter.topic],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.frontmatter.title,
+      description,
+      creator: "@sanku",
+    },
+    alternates: {
+      canonical: url,
+    },
   };
 }
 

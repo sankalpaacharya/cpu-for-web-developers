@@ -9,6 +9,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sanku.blog"),
   title: "Sanku | Personal Blog",
   description: "Thoughts on AI, design, engineering, and life",
   generator: "v0.app",
