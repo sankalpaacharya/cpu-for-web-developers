@@ -30,7 +30,7 @@ export function NoteableProjects() {
                             <h3 className="text-lg font-medium text-foreground">Portfolio</h3>
                             <div className="flex gap-4 text-sm shrink-0 items-center">
                                 <span className="text-xs font-mono text-muted-foreground/60">NOV 2025 - PRESENT</span>
-                                <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                                <Link href="https://sankalpa.info.np" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
                                     Live <HugeiconsIcon icon={ArrowUpRight01Icon} size={14} />
                                 </Link>
                             </div>
