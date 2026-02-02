@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAllPosts } from "@/lib/mdx-data";
 
 export async function GET() {
-  const posts = await getAllPosts();
+  const posts = getAllPosts();
 
   return NextResponse.json(
     posts.map((post) => ({

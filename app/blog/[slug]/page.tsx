@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/mdx";
-import { getAllPostSlugs, isScrollyPost } from "@/lib/mdx-data";
+import { getAllPostSlugs, isScrollyPost, getAllPosts } from "@/lib/mdx-data";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { TableOfContents } from "@/components/blog/table-of-contents";
 
-export async function generateStaticParams() {
-  const slugs = await getAllPostSlugs();
+export function generateStaticParams() {
+  const slugs = getAllPostSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 

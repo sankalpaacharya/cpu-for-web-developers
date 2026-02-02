@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getPostBySlug } from "@/lib/mdx";
+import { getPostFrontmatter } from "@/lib/mdx-data";
 
 export const runtime = "nodejs";
 export const alt = "Blog Post";
@@ -14,7 +14,7 @@ export default async function Image({
 }: {
     params: { slug: string };
 }) {
-    const post = await getPostBySlug(params.slug);
+    const post = getPostFrontmatter(params.slug);
 
     if (!post) {
         return new ImageResponse(

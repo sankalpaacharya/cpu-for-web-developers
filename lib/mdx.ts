@@ -16,6 +16,7 @@ import ReconcileDemo from "@/components/mental-model/reconcile-animation";
 import { TweetCard } from "@/components/ui/tweet-card";
 import { IntendedAudience } from "@/components/ui/intended-audience";
 import { MagicTweet } from "@/components/ui/magic-tweet";
+import { cache } from "react";
 
 import { chConfig, Post, PostFrontmatter } from "./mdx-data";
 
@@ -47,7 +48,11 @@ export interface PostWithContent extends Post {
   content: React.ReactElement;
 }
 
-export async function getPostBySlug(slug: string): Promise<PostWithContent | null> {
+/**
+ * Cached MDX compilation - uses React's cache() to dedupe
+ * compileMDX calls within the same request
+ */
+export const getPostBySlug = cache(async (slug: string): Promise<PostWithContent | null> => {
   const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
 
   if (!fs.existsSync(filePath)) {
@@ -85,4 +90,4 @@ export async function getPostBySlug(slug: string): Promise<PostWithContent | nul
     frontmatter,
     content,
   };
-}
+});

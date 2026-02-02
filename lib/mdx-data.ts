@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { compileMDX } from "next-mdx-remote/rsc";
-import { remarkCodeHike, recmaCodeHike, type CodeHikeConfig } from "codehike/mdx";
+import matter from "gray-matter";
+import { type CodeHikeConfig } from "codehike/mdx";
 import premiumTheme from "./premium-theme.json";
 
 // Code Hike configuration
@@ -28,34 +28,28 @@ export interface Post {
     frontmatter: PostFrontmatter;
 }
 
-export async function getAllPosts(): Promise<Post[]> {
+/**
+ * Get all posts - uses gray-matter for fast frontmatter parsing
+ * instead of full MDX compilation with CodeHike
+ */
+export function getAllPosts(): Post[] {
     const files = fs.readdirSync(CONTENT_DIR);
 
-    const posts = await Promise.all(
-        files
-            .filter((file) => file.endsWith(".mdx"))
-            .map(async (file) => {
-                const slug = file.replace(/\.mdx$/, "");
-                const filePath = path.join(CONTENT_DIR, file);
-                const source = fs.readFileSync(filePath, "utf-8");
+    const posts = files
+        .filter((file) => file.endsWith(".mdx"))
+        .map((file) => {
+            const slug = file.replace(/\.mdx$/, "");
+            const filePath = path.join(CONTENT_DIR, file);
+            const source = fs.readFileSync(filePath, "utf-8");
 
-                const { frontmatter } = await compileMDX<PostFrontmatter>({
-                    source,
-                    options: {
-                        parseFrontmatter: true,
-                        mdxOptions: {
-                            remarkPlugins: [[remarkCodeHike, chConfig]],
-                            recmaPlugins: [[recmaCodeHike, chConfig]],
-                        },
-                    },
-                });
+            // Use gray-matter for fast frontmatter parsing (no MDX compilation!)
+            const { data } = matter(source);
 
-                return {
-                    slug,
-                    frontmatter,
-                };
-            })
-    );
+            return {
+                slug,
+                frontmatter: data as PostFrontmatter,
+            };
+        });
 
     // Filter out drafts in production
     const filteredPosts = posts.filter((post) => {
@@ -73,9 +67,26 @@ export async function getAllPosts(): Promise<Post[]> {
     });
 }
 
-export async function getAllPostSlugs(): Promise<string[]> {
-    const posts = await getAllPosts();
+export function getAllPostSlugs(): string[] {
+    const posts = getAllPosts();
     return posts.map((post) => post.slug);
+}
+
+/**
+ * Get frontmatter only for a specific post - fast, no MDX compilation
+ * Use this when you only need metadata (e.g., for OG images, metadata)
+ */
+export function getPostFrontmatter(slug: string): Post | null {
+    const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
+    if (!fs.existsSync(filePath)) {
+        return null;
+    }
+    const source = fs.readFileSync(filePath, "utf-8");
+    const { data } = matter(source);
+    return {
+        slug,
+        frontmatter: data as PostFrontmatter,
+    };
 }
 
 export function isScrollyPost(slug: string): boolean {

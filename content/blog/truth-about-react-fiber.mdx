@@ -8,8 +8,8 @@ draft: true
 
 import { TweetCard } from "@/components/ui/tweet-card"
 
-A while ago, scrolling Twitter I stumbled upon this Twitter post. I was surprised by this tweet not only because
-it's true but also I didn't understand anything he said there much.
+A while ago scrolling Twitter I stumbled upon this interesting post.
+
 
 <div className='not-prose flex justify-center'> 
 <TweetCard 
@@ -19,4 +19,14 @@ it's true but also I didn't understand anything he said there much.
   likes={1400}
   bookmarks={999}
 />
+
 </div>
+
+this is a really good post. in the post he mentions this which really had me thinking and i caught my interest to understand more about react
+
+> react finally got freedom from the JS callstack. instead of recursive rendering, it’s this iterative stepping through fibers one by one. and that suddenly means react can pause. like just literally stop mid render, drop everything, let the browser repaint, handle input, chill, take a breath, then pick up exactly where it left off inside that huge UI tree. no more “oh no i’m stuck deep in recursion”. you can’t get stuck because react isn’t using the builtin stack anymore. it’s rolling its own.
+
+"react finally got freedom from the JS callstack" 🤔 
+
+to understand the solution we have to know the problem, what was hindering the react performance what did react team came up with, this post explains 
+about the react scheduler, we will talk about lane why they are so important.
