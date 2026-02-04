@@ -6,7 +6,6 @@ topic: "React"
 draft: true
 ---
 
-
 A while ago scrolling Twitter I stumbled upon this interesting post.
 
 
@@ -21,11 +20,182 @@ A while ago scrolling Twitter I stumbled upon this interesting post.
 
 </div>
 
-this is a really good post. in the post he mentions this which really had me thinking and i caught my interest to understand more about react
+this is a really good post. it sums so much about react, in the post he mentions this which really had me thinking and i caught my interest to understand more about react
 
 > react finally got freedom from the JS callstack. instead of recursive rendering, it’s this iterative stepping through fibers one by one. and that suddenly means react can pause. like just literally stop mid render, drop everything, let the browser repaint, handle input, chill, take a breath, then pick up exactly where it left off inside that huge UI tree. no more “oh no i’m stuck deep in recursion”. you can’t get stuck because react isn’t using the builtin stack anymore. it’s rolling its own.
 
 "react finally got freedom from the JS callstack" 🤔 
 
 to understand the solution we have to know the problem, what was hindering the react performance what did react team came up with, this post explains 
-about the react scheduler, we will talk about lane why they are so important.
+about the react scheduler
+
+# Story of Single thread
+
+We know javascript is a single thread programming language, and for each execution context it only has one thread and a callstack that process
+the code line by line. It starts processing from the top to bottom. 
+
+
+```js 
+
+function doSomethingHeavy() {
+  for (let i = 0; i < 1_000_000_000; i++) {} // blocks the thread
+  
+  console.log("Finished heavy task");
+}
+
+doSomethingHeavy();
+
+do_imporatant_task(); // important task
+```
+
+from the above example, once the we start the `doSomethingHeavy` task it will run until it finishes but let's say 
+we have a important task below, our important task is only executed  once `doSomethingHeavy` loop is finished. 
+
+This is a simple synchronous program, javascript does support a async programming as well, you have probably used `async` `await` in 
+javascript. This is done by the [event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model)
+
+you might suggest we can swap the position of the `doSomethingHeavy()` and `do_imporatant_task()` if we want `do_imporatant_task` to be executed 
+first. but right now we know what is important task, you wrote that function, we know what to place where, but what if it was undetermenistic?
+
+when you are running the middle of the heavy task, a really important task pops up, you can't stop the the running program in middle and process something 
+you can't empty the callstack suddenly and start working on something else.
+
+Let's see an example,
+
+<Sandpack
+template="react"
+files={{
+"/App.js": `import { useState } from "react";
+
+export default function BlockingDemo() {
+  const [count, setCount] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
+
+  const blockThread = () => {
+    setIsBlocked(true);
+    
+    setTimeout(() => {
+      const start = Date.now();
+      let dummy = 0;
+      
+      // Block for 3 seconds
+      while (Date.now() - start < 3000) {
+        dummy += Math.random();
+      }
+      
+      setIsBlocked(false);
+    }, 0);
+  };
+
+  return (
+    <div className="container">
+      <div className="count">{count}</div>
+      <div className="buttons">
+        <button onClick={blockThread}>
+          {isBlocked ? "Processing.." : "Start Work"}
+        </button>
+        <button onClick={() => setCount(count + 1)}>
+          Click +1
+        </button>
+      </div>
+    </div>
+  );
+}`,
+"/styles.css": `.container {
+  padding: 30px;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.count {
+  font-size: 3rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 20px;
+  font-family: monospace;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+button:hover {
+  background: #f5f5f5;
+}
+`,
+"/sandbox.config.json": `{
+  "infiniteLoopProtection": false
+}`
+}}
+/>
+
+Try clicking the `click +1` after you press `start work`.  `start work` takes 3 seconds to finish in the time even if you press 
+the `click +1` button the count doesn't increment instant, you have to wait it for 3 seconds. this feels laggy and a 
+bad user experience.
+
+## What's happening ?
+
+
+<img src="/blog/fiber/macro.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+when you click a button, that event doesn't directly registeres into a callstack, browser will enqueue the event in the 
+macro queue first, once your callstack is empty, eventloop will take the `onClick` task from the queue and push it into the 
+callstack.
+
+<EventLoopDemo />
+
+that's the reason you see increment of number after 3 seconds
+
+I suggest you to study about the event loop and come back to this blog
+
+- [micro task/macro task](https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide)
+
+
+
+
+## React of 2016
+
+<img src="/blog/fiber/eventloop.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+A time when it was 2016 react used to render everything in sync, event, buttons clicks, rendering  
+everything had a equal priority. 
+
+showing animation where there is a call stack and when user clicks a button it pushes to a microqueue and even loop will fetch and push it into a callstack
+
+
+
+react doesn't process everything at once it does one work and now since react has nothing to do
+
+so it's like it process one fiber give it to browser and browser will work, if browser doesn't have anything to do it will 
+give back to react, react process another fiber node give back to browser? is that it
+
+
+
+Think of it like passing a baton:
+
+React takes the baton → starts processing a fiber node (or a chunk of work)
+
+After a short time slice, React yields → posts a continuation via MessageChannel
+
+Call stack empties → browser gets control
+
+Browser can paint the UI
+
+Browser can handle clicks, scrolls, input events, timers
+
+If nothing urgent happened, the continuation posts back → React resumes next fiber node
+
+If a new event happened (like a button click that triggered state update) → scheduler now sees a high-priority task → may preempt old fiber
+
+So it’s React → Browser → React → Browser, in small chunks.
+

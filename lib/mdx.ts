@@ -16,6 +16,8 @@ import ReconcileDemo from "@/components/mental-model/reconcile-animation";
 import { TweetCard } from "@/components/ui/tweet-card";
 import { IntendedAudience } from "@/components/ui/intended-audience";
 import { MagicTweet } from "@/components/ui/magic-tweet";
+import { ThreadBlockingDemo } from "@/components/blog/thread-blocking-demo";
+import { EventLoopDemo } from "@/components/blog/event-loop-demo";
 import { cache } from "react";
 
 import { chConfig, Post, PostFrontmatter } from "./mdx-data";
@@ -40,6 +42,8 @@ const mdxComponents = {
   ReconcileDemo,
   IntendedAudience,
   MagicTweet,
+  ThreadBlockingDemo,
+  EventLoopDemo,
 };
 
 const CONTENT_DIR = path.join(process.cwd(), "content/blog");
