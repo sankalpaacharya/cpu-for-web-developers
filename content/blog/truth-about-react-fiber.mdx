@@ -146,13 +146,13 @@ bad user experience.
 ## What's happening ?
 
 
-<img src="/blog/fiber/macro.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+<EventLoopDemo />
 
 when you click a button, that event doesn't directly registeres into a callstack, browser will enqueue the event in the 
 macro queue first, once your callstack is empty, eventloop will take the `onClick` task from the queue and push it into the 
 callstack.
 
-<EventLoopDemo />
 
 that's the reason you see increment of number after 3 seconds
 
@@ -163,12 +163,14 @@ I suggest you to study about the event loop and come back to this blog
 
 
 
-## React of 2016
+# React of 2016
 
-<img src="/blog/fiber/eventloop.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
-A time when it was 2016 react used to render everything in sync, event, buttons clicks, rendering  
-everything had a equal priority. 
+A time when it was 2016 react used to render everything in sync, everything had equal priority. button clicks, animations
+data fetching etc React doesn't run outside the browser, it's just javascript program and it's gonna use the same callstack. 
+
+we have already discussed about react making UI trees during render phase in other [blog](https://inside-react.vercel.app/blog/running-react-on-different-platform)
+
 
 showing animation where there is a call stack and when user clicks a button it pushes to a microqueue and even loop will fetch and push it into a callstack
 
