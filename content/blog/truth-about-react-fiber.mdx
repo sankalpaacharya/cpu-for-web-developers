@@ -26,6 +26,23 @@ this is a really good post. it sums so much about react, in the post he mentions
 
 "react finally got freedom from the JS callstack" 🤔 
 
+this is interesting because why problem would the JS callstack even have so that react had to get rid of it? 
+
+To understand this better, let's look at the original design principles documented by Sebastian Markbåge (one of the core React team members):
+
+<div className='not-prose flex justify-center my-6'> 
+<GitHubIssueCard 
+  owner="facebook" 
+  repo="react" 
+  issueNumber={7942}
+  excerpt="I just wanted to document a few unique design patterns that apply to Fiber. Nothing in Fiber uses the normal JS stack. Meaning it does use the stack but it can be compiled into a flat function if needed. If I can't use recursion, how do I traverse through the tree? Learn to use the singly linked list tree traversal algorithm..."
+  maxBodyLength={320}
+/>
+</div>
+
+## goal is to explain recursive approach was bad not to explain event loop, goal is to explain reader why we needed a 
+## another solution
+
 to understand the solution we have to know the problem, what was hindering the react performance what did react team came up with, this post explains 
 about the react scheduler
 
@@ -143,44 +160,42 @@ Try clicking the `click +1` after you press `start work`.  `start work` takes 3 
 the `click +1` button the count doesn't increment instant, you have to wait it for 3 seconds. this feels laggy and a 
 bad user experience.
 
-## What's happening ?
-
-
-
-<EventLoopDemo />
-
-when you click a button, that event doesn't directly registeres into a callstack, browser will enqueue the event in the 
-macro queue first, once your callstack is empty, eventloop will take the `onClick` task from the queue and push it into the 
-callstack.
-
-
-that's the reason you see increment of number after 3 seconds
-
-I suggest you to study about the event loop and come back to this blog
-
-- [micro task/macro task](https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide)
-
-
-
 
 # React of 2016
 
 
 A time when it was 2016 react used to render everything in sync, everything had equal priority. button clicks, animations
-data fetching etc React doesn't run outside the browser, it's just javascript program and it's gonna use the same callstack. 
+data fetching etc React is just javascript program and it's gonna use the same callstack. 
+
+it was a recursive process once it starts rendering there is no way we can stop, once rendering started 
+we are handling over the js thread to a react program, it will begin processing the UI tree from top to bottom.
+
+this design decission dommed once the react apps got big, rendering took time
+
+<img src="/blog/fiber/slow.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+while processing user clicks a button, browser will enqueue that event into a queue and waits till the callstack is empty 
+but react is holding the js thread doing rendering, while user sits there and wonders why my button is not working 
+why this is so slow.
+
+it's not just button click only,input events, it would be scroll event, it would a animations, if each user interactions are not 
+instant it might feel application is laggy and slow.
 
 we have already discussed about react making UI trees during render phase in other [blog](https://inside-react.vercel.app/blog/running-react-on-different-platform)
 
+# Solution we need
 
-showing animation where there is a call stack and when user clicks a button it pushes to a microqueue and even loop will fetch and push it into a callstack
+React team thought we need a solution to this problem, React can't treat every task as a equal priority 
+if user clicks a button, we should halt the rendering process for a while, process that click event 
+first and then continue what we were
 
+# “The event loop isn’t blocking React. React is blocking the event loop.”
 
 
 react doesn't process everything at once it does one work and now since react has nothing to do
 
 so it's like it process one fiber give it to browser and browser will work, if browser doesn't have anything to do it will 
 give back to react, react process another fiber node give back to browser? is that it
-
 
 
 Think of it like passing a baton:
