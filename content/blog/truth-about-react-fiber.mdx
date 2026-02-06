@@ -26,7 +26,12 @@ this is a really good post. it sums so much about react, in the post he mentions
 
 "react finally got freedom from the JS callstack" 🤔 
 
-this is interesting because why problem would the JS callstack even have so that react had to get rid of it? 
+this is interesting because what problem would the JS callstack even have so that react had to get rid of it? many people 
+will say fiber exist because js is a single thread programming language but it's not an entirely true, 
+
+In this blog we will dicuss why react team choose the fiber approach and even if we had multithread model that wouldn't 
+be the best solution for the react.
+
 
 To understand this better, let's look at the original design principles documented by Sebastian Markbåge (one of the core React team members):
 
@@ -161,18 +166,61 @@ the `click +1` button the count doesn't increment instant, you have to wait it f
 bad user experience.
 
 
-# React of 2016
+# React 15
+
+React15 reconciller walked the component tree using the recursive function calls, Once it started it couldn't stop
+
+```jsx
+function updateComponent(component) {
+  const children = component.render();
+  
+  children.forEach(child => {
+    updateComponent(child); // ← Recursion
+  });
+}
+```
+
+Every call to `updateComponent` pushes a new frame onto JavaScript's call stack. For a tree with 1,000 components, 
+that's 1,000 stack frames, all nested inside each other.
+
+<React15InputDemo />
+
+Imagine, there is a input box and whatever user type on that input box will be reflected on screen 
+user typed a first character `s` react will start the rendering process, calling `updateComponent` inside `updateComponent`
+
+doing recursive calls, your callstack is filled with functionCalls now. while halfway through user typed a another 
+letter `a` but now you can't stop. It can't say _hold on, the user typed again, let me restart with the new input_ 
+
+JavaScript has no mechanism to pause a call stack, save its state, and resume later. React has to finish processing `s` before it can even see that you 
+typed `a`. Each keystroke triggers another full reconciliation. Each time, React is trapped in recursion while your inputs pile up.
 
 
-A time when it was 2016 react used to render everything in sync, everything had equal priority. button clicks, animations
-data fetching etc React is just javascript program and it's gonna use the same callstack. 
+This is why React apps felt laggy.
 
-it was a recursive process once it starts rendering there is no way we can stop, once rendering started 
-we are handling over the js thread to a react program, it will begin processing the UI tree from top to bottom.
-
-this design decission dommed once the react apps got big, rendering took time
+## Priority
 
 <img src="/blog/fiber/slow.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+There was a second problem. React treated all updates equally. A button click got the same priority as a background data fetch. 
+An animation got the same priority as logging. 
+
+But some updates are urgent (user typing, clicking) and some can wait (analytics, prefetching). React had no way to express 
+this because once reconciliation started, it ran to completion. Everything was equally important because everything blocked 
+everything else.
+
+Let's say you fetch some data from the server a list of 500 products. The response comes back, 
+and React starts rendering those 500 items to the screen. Halfway through maybe 250 products rendered you type a letter 
+in the search box.
+
+What should React do?
+
+stop rendering those products. Handle the keystroke first. Update the input box immediately. That's what 
+the user cares about seeing their typing reflected instantly.
+
+The products can wait. A 100ms delay in showing search results? Barely noticeable. But a 100ms delay in seeing your keystroke? 
+That feels broken.
+
+
 
 while processing user clicks a button, browser will enqueue that event into a queue and waits till the callstack is empty 
 but react is holding the js thread doing rendering, while user sits there and wonders why my button is not working 

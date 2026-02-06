@@ -19,6 +19,7 @@ import { MagicTweet } from "@/components/ui/magic-tweet";
 import { GitHubIssueCard } from "@/components/ui/github-issue-card";
 import { ThreadBlockingDemo } from "@/components/blog/thread-blocking-demo";
 import { EventLoopDemo } from "@/components/blog/event-loop-demo";
+import { React15InputDemo } from "@/components/blog/react15-input-demo";
 import { cache } from "react";
 
 import { chConfig, Post, PostFrontmatter } from "./mdx-data";
@@ -46,6 +47,7 @@ const mdxComponents = {
   GitHubIssueCard,
   ThreadBlockingDemo,
   EventLoopDemo,
+  React15InputDemo,
 };
 
 const CONTENT_DIR = path.join(process.cwd(), "content/blog");
