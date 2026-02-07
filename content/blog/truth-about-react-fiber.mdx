@@ -58,7 +58,7 @@ do_imporatant_task(); // important task
 From the above example, once we start the `doSomethingHeavy` task it will run until it finishes, but let's say 
 we have an important task below, our important task is only executed once the `doSomethingHeavy` loop is finished. 
 
-This is a simple synchronous program. JavaScript does support async programming as well—you have probably used `async` `await` in 
+This is a simple synchronous program. JavaScript does support async programming as well, you have probably used `async` `await` in 
 JavaScript. This is done by the [event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model).
 
 You might suggest we can swap the position of the `doSomethingHeavy()` and `do_imporatant_task()` if we want `do_imporatant_task` to be executed 
@@ -147,7 +147,7 @@ button:hover {
 />
 
 Try clicking the `click +1` after you press `start work`. `start work` takes 3 seconds to finish. In that time, even if you press 
-the `click +1` button, the count doesn't increment instantly—you have to wait for 3 seconds. This feels laggy and is a 
+the `click +1` button, the count doesn't increment instantly, you have to wait for 3 seconds. This feels laggy and is a 
 bad user experience.
 
 
@@ -171,7 +171,7 @@ that's 1,000 stack frames, all nested inside each other.
 <React15InputDemo />
 
 Imagine there is an input box and whatever the user types in that input box will be reflected on screen. The 
-user typed the first character `s`—React will start the rendering process, calling `updateComponent` inside `updateComponent`
+user typed the first character `s`, React will start the rendering process, calling `updateComponent` inside `updateComponent`
 
 doing recursive calls, your call stack is filled with function calls now. While halfway through, the user typed another 
 letter `a`, but now you can't stop. It can't say _hold on, the user typed again, let me restart with the new input_ 
@@ -193,21 +193,21 @@ But some updates are urgent (user typing, clicking) and some can wait (analytics
 this because once reconciliation started, it ran to completion. Everything was equally important because everything blocked 
 everything else.
 
-Let's say you fetch some data from the server—a list of 500 products. The response comes back, 
-and React starts rendering those 500 items to the screen. Halfway through—maybe 250 products rendered—you type a letter 
+Let's say you fetch some data from the server, a list of 500 products. The response comes back, 
+and React starts rendering those 500 items to the screen. Halfway through, maybe 250 products rendered, you type a letter 
 in the search box.
 
 What should React do?
 
 Stop rendering those products. Handle the keystroke first. Update the input box immediately. That's what 
-the user cares about—seeing their typing reflected instantly.
+the user cares about, seeing their typing reflected instantly.
 
 The products can wait. A 100ms delay in showing search results? Barely noticeable. But a 100ms delay in seeing your keystroke? 
 That feels broken.
 
 # Need of solution
 
-The React team thought this was not just going to be a small update—they needed a new way to solve this problem, 
+The React team thought this was not just going to be a small update, they needed a new way to solve this problem, 
 so they wrote a new reconciliation algorithm, which is Fiber
 
 now this new reconciliation algorithm is a whole new re-write based on a cooperative scheduling. React team 
@@ -232,7 +232,7 @@ let's not jump straight into React Fiber, let's try to think ourselves about how
 
 Now this is an intuition I wanna build up, but if you are in a rush and just wanna read about Fiber, you can skip this part!
 
-We have a few options in our basket—maybe we can use multithreading (web workers). 
+We have a few options in our basket, maybe we can use multithreading (web workers). 
 
 
 The React team thought they needed a solution to this problem. React can't treat every task as equal priority. 
