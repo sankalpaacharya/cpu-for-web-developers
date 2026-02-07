@@ -1,12 +1,12 @@
 ---
 title: "React Fiber"
-description: "rect fiber"
+description: "React fiber"
 date: "2026-01-26"
 topic: "React"
 draft: false
 ---
 
-A while ago scrolling Twitter I stumbled upon this interesting post.
+A while ago, scrolling Twitter, I stumbled upon this interesting post.
 
 
 <div className='not-prose flex justify-center'> 
@@ -20,7 +20,7 @@ A while ago scrolling Twitter I stumbled upon this interesting post.
 
 </div>
 
-this is a really good post. it sums so much about react, in the post he mentions this which really had me thinking and i caught my interest to understand more about react
+This is a really good post. It sums up so much about React, in the post he mentions this which really had me thinking and it caught my interest to understand more about React
 
 > react finally got freedom from the JS callstack. instead of recursive rendering, it’s this iterative stepping through fibers one by one. and that suddenly means react can pause. like just literally stop mid render, drop everything, let the browser repaint, handle input, chill, take a breath, then pick up exactly where it left off inside that huge UI tree. no more “oh no i’m stuck deep in recursion”. you can’t get stuck because react isn’t using the builtin stack anymore. it’s rolling its own.
 
@@ -29,20 +29,16 @@ this is a really good post. it sums so much about react, in the post he mentions
 this is interesting because what problem would the JS callstack even have so that react had to get rid of it? many people 
 will say fiber exist because js is a single thread programming language but it's not an entirely true, 
 
-In this blog we will dicuss why react team choose the fiber approach and even if we had multithread model that wouldn't 
-be the best solution for the react.
+In this blog we will discuss why the React team chose the fiber approach, and even if we had a multithread model, that wouldn't 
+be the best solution for React.
 
 
-
-
-
-
-to understand the solution we have to know the problem, what was hindering the react performance what did react team came up with, this post explains 
-about the react scheduler
+To understand the solution, we have to know the problem: what was hindering React's performance, what the React team came up with. This post explains 
+about the React scheduler
 
 # Story of Single thread
 
-We know javascript is a single thread programming language, and for each execution context it only has one thread and a callstack that process
+We know JavaScript is a single-threaded programming language, and for each execution context it only has one thread and a call stack that processes
 the code line by line. It starts processing from the top to bottom. 
 
 
@@ -59,19 +55,19 @@ doSomethingHeavy();
 do_imporatant_task(); // important task
 ```
 
-from the above example, once the we start the `doSomethingHeavy` task it will run until it finishes but let's say 
-we have a important task below, our important task is only executed  once `doSomethingHeavy` loop is finished. 
+From the above example, once we start the `doSomethingHeavy` task it will run until it finishes, but let's say 
+we have an important task below, our important task is only executed once the `doSomethingHeavy` loop is finished. 
 
-This is a simple synchronous program, javascript does support a async programming as well, you have probably used `async` `await` in 
-javascript. This is done by the [event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model)
+This is a simple synchronous program. JavaScript does support async programming as well—you have probably used `async` `await` in 
+JavaScript. This is done by the [event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model).
 
-you might suggest we can swap the position of the `doSomethingHeavy()` and `do_imporatant_task()` if we want `do_imporatant_task` to be executed 
-first. but right now we know what is important task, you wrote that function, we know what to place where, but what if it was undetermenistic?
+You might suggest we can swap the position of the `doSomethingHeavy()` and `do_imporatant_task()` if we want `do_imporatant_task` to be executed 
+first, but right now we know what the important task is. You wrote that function, we know what to place where, but what if it was undeterministic?
 
-when you are running the middle of the heavy task, a really important task pops up, you can't stop the the running program in middle and process something 
-you can't empty the callstack suddenly and start working on something else.
+When you are running in the middle of a heavy task, a really important task pops up. You can't stop the running program in the middle and process something; 
+you can't empty the call stack suddenly and start working on something else.
 
-Let's see an example,
+Let's see an example:
 
 <Sandpack
 template="react"
@@ -150,14 +146,14 @@ button:hover {
 }}
 />
 
-Try clicking the `click +1` after you press `start work`.  `start work` takes 3 seconds to finish in the time even if you press 
-the `click +1` button the count doesn't increment instant, you have to wait it for 3 seconds. this feels laggy and a 
+Try clicking the `click +1` after you press `start work`. `start work` takes 3 seconds to finish. In that time, even if you press 
+the `click +1` button, the count doesn't increment instantly—you have to wait for 3 seconds. This feels laggy and is a 
 bad user experience.
 
 
 # React 15
 
-React15 reconciller walked the component tree using the recursive function calls, Once it started it couldn't stop
+React 15 reconciler walked the component tree using recursive function calls. Once it started, it couldn't stop
 
 ```jsx
 function updateComponent(component) {
@@ -174,11 +170,11 @@ that's 1,000 stack frames, all nested inside each other.
 
 <React15InputDemo />
 
-Imagine, there is a input box and whatever user type on that input box will be reflected on screen 
-user typed a first character `s` react will start the rendering process, calling `updateComponent` inside `updateComponent`
+Imagine there is an input box and whatever the user types in that input box will be reflected on screen. The 
+user typed the first character `s`—React will start the rendering process, calling `updateComponent` inside `updateComponent`
 
-doing recursive calls, your callstack is filled with functionCalls now. while halfway through user typed a another 
-letter `a` but now you can't stop. It can't say _hold on, the user typed again, let me restart with the new input_ 
+doing recursive calls, your call stack is filled with function calls now. While halfway through, the user typed another 
+letter `a`, but now you can't stop. It can't say _hold on, the user typed again, let me restart with the new input_ 
 
 JavaScript has no mechanism to pause a call stack, save its state, and resume later. React has to finish processing `s` before it can even see that you 
 typed `a`. Each keystroke triggers another full reconciliation. Each time, React is trapped in recursion while your inputs pile up.
@@ -197,25 +193,25 @@ But some updates are urgent (user typing, clicking) and some can wait (analytics
 this because once reconciliation started, it ran to completion. Everything was equally important because everything blocked 
 everything else.
 
-Let's say you fetch some data from the server a list of 500 products. The response comes back, 
-and React starts rendering those 500 items to the screen. Halfway through maybe 250 products rendered you type a letter 
+Let's say you fetch some data from the server—a list of 500 products. The response comes back, 
+and React starts rendering those 500 items to the screen. Halfway through—maybe 250 products rendered—you type a letter 
 in the search box.
 
 What should React do?
 
-stop rendering those products. Handle the keystroke first. Update the input box immediately. That's what 
-the user cares about seeing their typing reflected instantly.
+Stop rendering those products. Handle the keystroke first. Update the input box immediately. That's what 
+the user cares about—seeing their typing reflected instantly.
 
 The products can wait. A 100ms delay in showing search results? Barely noticeable. But a 100ms delay in seeing your keystroke? 
 That feels broken.
 
 # Need of solution
 
-React team thought this is not just going to be an small update, they needed a new way to solve this problem 
-so they wrote a new reconciliation algorithm which is fiber
+The React team thought this was not just going to be a small update—they needed a new way to solve this problem, 
+so they wrote a new reconciliation algorithm, which is Fiber
 
 now this new reconciliation algorithm is a whole new re-write based on a cooperative scheduling. React team 
-were testing different things and tried to optimize this reconciliation process. 
+was testing different things and trying to optimize this reconciliation process.
 
 To understand this better, let's look at the original design principles documented by Sebastian Markbåge (one of the core React team members):
 
@@ -229,16 +225,16 @@ To understand this better, let's look at the original design principles document
 />
 </div>
 
-I will just breakdown this documention, if you would like to read it by yourself feel free to do so. 
+I will just break down this documentation. If you would like to read it yourself, feel free to do so. 
 
 
-let's not jump straight in into the react fiber, let's try to think of ourselves how we can come up with? 
+let's not jump straight into React Fiber, let's try to think ourselves about how we can come up with a solution. 
 
-now this is an intution i wanna build up but if you are in rush and just wanna read fiber you can skip this part!
+Now this is an intuition I wanna build up, but if you are in a rush and just wanna read about Fiber, you can skip this part!
 
-we have a few options in our basket, maybe we can use multithread(webworkers), 
+We have a few options in our basket—maybe we can use multithreading (web workers). 
 
 
-React team thought we need a solution to this problem, React can't treat every task as a equal priority 
-if user clicks a button, we should halt the rendering process for a while, process that click event 
-first and then continue what we were
+The React team thought they needed a solution to this problem. React can't treat every task as equal priority. 
+If a user clicks a button, we should halt the rendering process for a while, process that click event 
+first, and then continue what we were doing.
