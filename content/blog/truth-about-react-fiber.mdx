@@ -3,7 +3,7 @@ title: "React Fiber"
 description: "rect fiber"
 date: "2026-01-26"
 topic: "React"
-draft: true
+draft: false
 ---
 
 A while ago scrolling Twitter I stumbled upon this interesting post.
@@ -33,20 +33,9 @@ In this blog we will dicuss why react team choose the fiber approach and even if
 be the best solution for the react.
 
 
-To understand this better, let's look at the original design principles documented by Sebastian Markbåge (one of the core React team members):
 
-<div className='not-prose flex justify-center my-6'> 
-<GitHubIssueCard 
-  owner="facebook" 
-  repo="react" 
-  issueNumber={7942}
-  excerpt="I just wanted to document a few unique design patterns that apply to Fiber. Nothing in Fiber uses the normal JS stack. Meaning it does use the stack but it can be compiled into a flat function if needed. If I can't use recursion, how do I traverse through the tree? Learn to use the singly linked list tree traversal algorithm..."
-  maxBodyLength={320}
-/>
-</div>
 
-## goal is to explain recursive approach was bad not to explain event loop, goal is to explain reader why we needed a 
-## another solution
+
 
 to understand the solution we have to know the problem, what was hindering the react performance what did react team came up with, this post explains 
 about the react scheduler
@@ -220,47 +209,36 @@ the user cares about seeing their typing reflected instantly.
 The products can wait. A 100ms delay in showing search results? Barely noticeable. But a 100ms delay in seeing your keystroke? 
 That feels broken.
 
+# Need of solution
+
+React team thought this is not just going to be an small update, they needed a new way to solve this problem 
+so they wrote a new reconciliation algorithm which is fiber
+
+now this new reconciliation algorithm is a whole new re-write based on a cooperative scheduling. React team 
+were testing different things and tried to optimize this reconciliation process. 
+
+To understand this better, let's look at the original design principles documented by Sebastian Markbåge (one of the core React team members):
+
+<div className='not-prose flex justify-center my-6'> 
+<GitHubIssueCard 
+  owner="facebook" 
+  repo="react" 
+  issueNumber={7942}
+  excerpt="I just wanted to document a few unique design patterns that apply to Fiber. Nothing in Fiber uses the normal JS stack. Meaning it does use the stack but it can be compiled into a flat function if needed. If I can't use recursion, how do I traverse through the tree? Learn to use the singly linked list tree traversal algorithm..."
+  maxBodyLength={320}
+/>
+</div>
+
+I will just breakdown this documention, if you would like to read it by yourself feel free to do so. 
 
 
-while processing user clicks a button, browser will enqueue that event into a queue and waits till the callstack is empty 
-but react is holding the js thread doing rendering, while user sits there and wonders why my button is not working 
-why this is so slow.
+let's not jump straight in into the react fiber, let's try to think of ourselves how we can come up with? 
 
-it's not just button click only,input events, it would be scroll event, it would a animations, if each user interactions are not 
-instant it might feel application is laggy and slow.
+now this is an intution i wanna build up but if you are in rush and just wanna read fiber you can skip this part!
 
-we have already discussed about react making UI trees during render phase in other [blog](https://inside-react.vercel.app/blog/running-react-on-different-platform)
+we have a few options in our basket, maybe we can use multithread(webworkers), 
 
-# Solution we need
 
 React team thought we need a solution to this problem, React can't treat every task as a equal priority 
 if user clicks a button, we should halt the rendering process for a while, process that click event 
 first and then continue what we were
-
-# “The event loop isn’t blocking React. React is blocking the event loop.”
-
-
-react doesn't process everything at once it does one work and now since react has nothing to do
-
-so it's like it process one fiber give it to browser and browser will work, if browser doesn't have anything to do it will 
-give back to react, react process another fiber node give back to browser? is that it
-
-
-Think of it like passing a baton:
-
-React takes the baton → starts processing a fiber node (or a chunk of work)
-
-After a short time slice, React yields → posts a continuation via MessageChannel
-
-Call stack empties → browser gets control
-
-Browser can paint the UI
-
-Browser can handle clicks, scrolls, input events, timers
-
-If nothing urgent happened, the continuation posts back → React resumes next fiber node
-
-If a new event happened (like a button click that triggered state update) → scheduler now sees a high-priority task → may preempt old fiber
-
-So it’s React → Browser → React → Browser, in small chunks.
-
