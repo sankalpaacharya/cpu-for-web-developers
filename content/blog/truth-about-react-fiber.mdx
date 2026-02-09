@@ -263,67 +263,85 @@ This happens in small time slices React works for ~5ms, then
 yields. The browser breathes. Then React continues where it left 
 off
 
-# Deep Dive
+# Time Slice
+<img src="/blog/fiber/slice.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
-```tsx 
-function FiberNode(
-  this: $FlowFixMe,
-  tag: WorkTag,
-  pendingProps: mixed,
-  key: ReactKey,
-  mode: TypeOfMode,
-) {
-  // Instance
-  this.tag = tag;
-  this.key = key;
-  this.elementType = null;
-  this.type = null;
-  this.stateNode = null;
+So React gave up on recursion. But if you're not using the call 
+stack anymore, you need something else to track your progress through 
+the component tree.
 
-  // Fiber
-  this.return = null;
-  this.child = null;
-  this.sibling = null;
-  this.index = 0;
+React needed a data structure it could own. Something it could walk 
+through, pause in the middle of, and resume later. Something flexible.
 
-  this.ref = null;
-  this.refCleanup = null;
+That's Fiber. yes, Fiber can refer to both a data structure and an algorithm, depending on the context: 
 
-  this.pendingProps = pendingProps;
-  this.memoizedProps = null;
-  this.updateQueue = null;
-  this.memoizedState = null;
-  this.dependencies = null;
+When you write your JSX components, React doesn't just render them 
+directly. It first builds an in-memory representation of your entire 
+UI tree. 
 
-  this.mode = mode;
-
-  // Effects
-  this.flags = NoFlags;
-  this.subtreeFlags = NoFlags;
-  this.deletions = null;
-
-  this.lanes = NoLanes;
-  this.childLanes = NoLanes;
-
-  this.alternate = null;
-
+```javascript
+const fiber = {
+  type: 'div',           // What is this?
+  
+  child: h1Fiber,        // Pointer to first child
+  sibling: buttonFiber,  // Pointer to next sibling  
+  return: AppFiber,      // Pointer back to parent
+  
+  // ... lots of other stuff React needs
+};
 ```
 
+Each fiber represents one piece of your UI. A component. A div. A 
+button. Whatever. See those three properties? `child`, `sibling`, `return`. These are 
+pointers. They connect fibers to other fibers, forming a linked list.
 
-ut wait—if React exits the callstack, how does it remember where 
-it was?
+if i have to put it simple each of your DOM node is a fiber object
 
-This is where Fiber's structure matters. React represents your 
-component tree as a linked list of objects. Each object (a "fiber") 
-has pointers to:
-- Its first child
-- Its next sibling  
-- Its parent
+put drawing and explain from the build your own react thing 
 
-So when React yields control, it just saves a pointer: "I was 
-working on this fiber." When it comes back, it follows the pointers 
-to find the next unit of work. No call stack needed—React is 
-walking its own data structure.
+And here's why this matters: React OWNS this data structure. It's 
+just an object sitting in memory. React can walk it however it wants, 
+stop whenever it wants, and resume whenever it wants.
+
+# How Time Slicing Actually Works
+
+<img src="/blog/fiber/slice.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+Let's say you type in an input box. That triggers a re-render of 500 
+search results.
+
+Here's what happens:
+
+_The browser gives React about 5 milliseconds to work._ Not much time.
+
+React starts walking the fiber tree. It processes the first fiber—
+maybe that's your input component. Updates it. Moves to the next fiber 
+via the `child` pointer. Processes that. Moves to the next. And the next.
+
+After a few fibers, maybe 10 or 15, React checks the time. "Have I 
+been working for 5ms yet?"
+
+If yes, React stops. It doesn't finish the tree. It just... stops. Saves 
+a pointer to where it was. Exits the function. The call stack clears.
+
+Now the browser gets control back. It handles any pending events—your 
+next keystroke, a scroll, a click. It repaints if needed. Does whatever 
+it needs to do.
+
+When the browser is ready, it calls React back. "Hey, you can have 
+another 5ms."
+
+React picks up the pointer it saved earlier. "Right, I was on fiber 
+#15." And continues walking from there.
+
+This repeats. React works. Browser breathes. React works. Browser 
+breathes. Back and forth, cooperating, until all 500 fibers are 
+processed.
+
+Your typing feels instant because the browser handles each keystroke 
+within 5ms. React is rendering in the background, in little chunks, 
+without blocking you.
+
 
 To understand this better, let's look at the original design principles documented by Sebastian Markbåge (one of the core React team members):
 
