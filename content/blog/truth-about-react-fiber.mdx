@@ -6,7 +6,7 @@ topic: "React"
 draft: true
 ---
 
-A while ago, scrolling Twitter, I stumbled upon this interesting post.
+A while ago, scrolling Twitter, I stumbled upon this post.
 
 <div className='not-prose flex justify-center'> 
 <TweetCard 
@@ -21,21 +21,15 @@ A while ago, scrolling Twitter, I stumbled upon this interesting post.
 
 This is a really good post. It sums up so much about React, in the post he mentions this which really had me thinking and it caught my interest to understand more about React
 
-> react finally got freedom from the JS callstack. instead of recursive rendering, it’s this iterative stepping through fibers one by one. and that suddenly means react can pause. like just literally stop mid render, drop everything, let the browser repaint, handle input, chill, take a breath, then pick up exactly where it left off inside that huge UI tree. no more “oh no i’m stuck deep in recursion”. you can’t get stuck because react isn’t using the builtin stack anymore. it’s rolling its own.
+>react finally got freedom from the JS callstack. instead of recursive rendering, it’s this iterative stepping through fibers one by one. and that suddenly means react can pause. like just literally stop mid render, drop everything, let the browser repaint, handle input, chill, take a breath, then pick up exactly where it left off inside that huge UI tree. no more “oh no i’m stuck deep in recursion”. you can’t get stuck because react isn’t using the builtin stack anymore. it’s rolling its own
 
 "react finally got freedom from the JS callstack" _hmm_
 
-this is interesting because what problem would the JS callstack even have so that react had to get rid of it? many people 
-will say fiber exist because js is a single thread programming language but it's not an entirely true, 
+this is interesting because what problem would the JS callstack even have so that react had to get rid of it? 
 
-I see many windy discussion on internet when people talk about react fiber not being not very optimal way and just to optimize 
-the rendering process reconciliation algorithm didn't need a re-write, every library comes with their own trade off and
-they have their own way of solving problems
+To understand the solution, we have to know the problem: what was hindering React's performance, what the React team came up with.
 
-To understand the solution, we have to know the problem: what was hindering React's performance, what the React team came up with. This post explains 
-about the React scheduler
-
-# Story of Single thread
+# Story of a Single Thread
 
 We know JavaScript is a single-threaded programming language, and for each execution context it only has one thread and a call stack that processes
 the code line by line. It starts processing from the top to bottom. 
@@ -51,17 +45,17 @@ function doSomethingHeavy() {
 
 doSomethingHeavy();
 
-do_imporatant_task(); // important task
+do_important_task(); // important task
 ```
 
 From the above example, once we start the `doSomethingHeavy` task it will run until it finishes, but let's say 
-we have an important task below, our important task is only executed once the `doSomethingHeavy` loop is finished. 
+we have an important task below. Our important task is only executed once the `doSomethingHeavy` loop is finished. 
 
 This is a simple synchronous program. JavaScript does support async programming as well, you have probably used `async` `await` in 
 JavaScript. This is done by the [event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model).
 
-You might suggest we can swap the position of the `doSomethingHeavy()` and `do_imporatant_task()` if we want `do_imporatant_task` to be executed 
-first, but right now we know what the important task is. You wrote that function, we know what to place where, but what if it was undeterministic?
+You might suggest we can swap the position of the `doSomethingHeavy()` and `do_important_task()` if we want `do_important_task` to be executed 
+first, but right now we know what the important task is. You wrote that function, we know what to place where, but what if it was nondeterministic?
 
 When you are running in the middle of a heavy task, a really important task pops up. You can't stop the running program in the middle and process something; 
 you can't empty the call stack suddenly and start working on something else.
@@ -206,18 +200,18 @@ That feels broken.
 
 
 
-# What we need?
+# What We Need
 
 <img src="/blog/fiber/need.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
-Before we start looking for a solution we should be clear what we are looking in a solution? 
+Before we start looking for a solution we should be clear what we are looking for in a solution. 
 
-We are facing two main problem with this recursive reconciliation approach, 
-- we can't pause the rendering process in middle (callstack level)
-- we can't assume every update have same priority 
+We are facing two main problems with this recursive reconciliation approach: 
+- we can't pause the rendering process in the middle (callstack level)
+- we can't assume every update has the same priority 
 
-so, our solution should be able to pause the rendering process if there is another high priority task, pick that up 
-render it first and continue working where it let off.
+so, our solution should be able to pause the rendering process if there is another high priority task, pick that up, 
+render it first and continue working where it left off.
 
 
 _why pause at callstack level?_
@@ -226,11 +220,11 @@ _why pause at callstack level?_
 
 
 
-because thats how browsers work, unless your callstack is empty browser can't push the click, keystroke events 
-from macro queue to a callstack.
+because that's how browsers work, unless your callstack is empty browser can't push the click, keystroke events 
+from macro queue to the callstack.
 
 so browser is just like _finish whatever you have in your plate and i will give you more_ but if your recursive 
-functions takes way too long to process, browser won't have the control to push those events in a callstack.
+functions take way too long to process, browser won't have the control to push those events in the callstack.
 
 # Solution
 
@@ -259,21 +253,22 @@ control to the browser. The callstack clears. The browser handles
 any pending events. Then React comes back and processes the next 
 unit.
 
-This happens in small time slices React works for ~5ms, then 
+This happens in small time slices. React works for ~5ms, then 
 yields. The browser breathes. Then React continues where it left 
-off
+off.
 
-# Time Slice
-<img src="/blog/fiber/slice.png" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+The old Scheduler (pre-React 18-ish) used a fixed ~5 ms heuristic in some paths. Modern React [scheduler package](https://github.com/facebook/react/tree/main/packages/scheduler) is frame-aligned and dynamic. It tries to finish before the next frame deadline (~16.7 ms @60 fps, ~8.3 ms @120 fps), yielding earlier only when it knows a higher-priority event is pending or when it's safe.
+
+how the react scheduler works can be a different topic of blog but for simplicity in this blog we will say ~5ms
+
+# Fiber as a data structure
 
 So React gave up on recursion. But if you're not using the call 
 stack anymore, you need something else to track your progress through 
 the component tree.
 
 React needed a data structure it could own. Something it could walk 
-through, pause in the middle of, and resume later. Something flexible.
-
-That's Fiber. yes, Fiber can refer to both a data structure and an algorithm, depending on the context: 
+through, pause in the middle of, and resume later. Something flexible. That's Fiber. yes, Fiber can refer to both a data structure and an algorithm, depending on the context: 
 
 When you write your JSX components, React doesn't just render them 
 directly. It first builds an in-memory representation of your entire 
@@ -291,17 +286,46 @@ const fiber = {
 };
 ```
 
-Each fiber represents one piece of your UI. A component. A div. A 
-button. Whatever. See those three properties? `child`, `sibling`, `return`. These are 
-pointers. They connect fibers to other fibers, forming a linked list.
-
-if i have to put it simple each of your DOM node is a fiber object
+Each [fiber](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiber.js#L138-L211) represents one piece of your UI. A component. A div. A 
+button. Whatever. See those three properties of fiber object? `child`, `sibling`, `return`. These are 
+pointers. They connect fibers to other fibers, forming like a linked list.
 
 put drawing and explain from the build your own react thing 
 
-And here's why this matters: React OWNS this data structure. It's 
+And here's why this matters: React owns this data structure. It's 
 just an object sitting in memory. React can walk it however it wants, 
 stop whenever it wants, and resume whenever it wants.
+
+
+# How Fiber Traversal Works
+
+<img src="/blog/fiber/fiber.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+Step 1: Move to the child
+
+When React finishes performing work on a fiber, the first thing it checks is whether that fiber has a child. If it does, that child fiber becomes the next unit of work.
+
+From our example, once React finishes working on the `form` fiber, it moves to its child fiber.
+
+Step 2: Move to the sibling
+
+If a fiber does not have a child, React looks for a sibling fiber.
+
+From the example, the `input` fiber does not have a child, so React moves to its sibling. In the same way, traversal continues through `label`, then down to `span`, and then to `a`.
+
+Step 3: Move upward to find work
+
+If a fiber has neither a child nor a sibling, React moves upward using the return pointer. At this point, React looks for the closest parent fiber that has an unvisited sibling.
+
+From the example, once React reaches a fiber that has no remaining child or sibling to visit, it moves back up to the `form` fiber.
+
+If the parent fiber also does not have a sibling, React keeps moving upward until it reaches the `root` fiber.
+
+Step 4: Stop at the root
+
+Traversal continues until React reaches the root fiber and there are no more fibers left to process.
+
+At that point, the render phase is complete.
 
 # How Time Slicing Actually Works
 
@@ -314,7 +338,7 @@ Here's what happens:
 
 _The browser gives React about 5 milliseconds to work._ Not much time.
 
-React starts walking the fiber tree. It processes the first fiber—
+React starts walking the fiber tree. It processes the first fiber, 
 maybe that's your input component. Updates it. Moves to the next fiber 
 via the `child` pointer. Processes that. Moves to the next. And the next.
 
@@ -329,12 +353,8 @@ next keystroke, a scroll, a click. It repaints if needed. Does whatever
 it needs to do.
 
 When the browser is ready, it calls React back. "Hey, you can have 
-another 5ms."
-
-React picks up the pointer it saved earlier. "Right, I was on fiber 
-#15." And continues walking from there.
-
-This repeats. React works. Browser breathes. React works. Browser 
+another 5ms." React picks up the pointer it saved earlier. "Right, I was on fiber 
+#15." And continues walking from there. This repeats. React works. Browser breathes. React works. Browser 
 breathes. Back and forth, cooperating, until all 500 fibers are 
 processed.
 
@@ -342,9 +362,26 @@ Your typing feels instant because the browser handles each keystroke
 within 5ms. React is rendering in the background, in little chunks, 
 without blocking you.
 
+# Conclusion
 
-To understand this better, let's look at the original design principles documented by Sebastian Markbåge (one of the core React team members):
+So that’s basically what Fiber is about.
 
+I see some discussions on internet people talking why use fiber architecture, there exist other libraries like vue, solidjs
+which use a more reactive approach.
+
+Sure, other frameworks like Vue or SolidJS do it differently. They use reactive signals or fine-grained tracking to only update what actually changes. That's faster in some scenarios, but it comes with its own trade-offs.
+
+React's approach is all about flexibility, predictability, and backward compatibility. Your components stay pure functions of state, your mental model stays simple, and Fiber quietly handles all the messy scheduling.
+
+At the end of the day, React still sticks to its core philosophy.
+
+<img src="/blog/fiber/state.svg" alt="React UI Runtime" width="400" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+The function is the representation of UI of the state.
+
+Thanks for reading ❤️
+
+Read more:
 <div className='not-prose flex justify-center my-6'> 
 <GitHubIssueCard 
   owner="facebook" 
