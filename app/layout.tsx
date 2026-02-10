@@ -9,10 +9,33 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://sanku.blog"),
-  title: "Sanku | Personal Blog",
-  description: "Thoughts on AI, design, engineering, and life",
+  metadataBase: new URL("https://inside-react.vercel.app"),
+  title: "Inside React | Sanku's Blog",
+  description: "Deep dives into React internals, Fiber architecture, and modern web development",
   generator: "v0.app",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://inside-react.vercel.app",
+    siteName: "Inside React",
+    title: "Inside React | Sanku's Blog",
+    description: "Deep dives into React internals, Fiber architecture, and modern web development",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Inside React - Sanku's Blog",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Inside React | Sanku's Blog",
+    description: "Deep dives into React internals, Fiber architecture, and modern web development",
+    images: ["/og-image.png"],
+    creator: "@user_sankalpa",
+  },
   icons: {
     icon: [
       {

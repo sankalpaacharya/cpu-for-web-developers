@@ -20,9 +20,9 @@ export async function generateMetadata({
   const post = getPostFrontmatter(slug);
   if (!post) return {};
 
-  const title = `${post.frontmatter.title} | Sanku's Blog`;
+  const title = `${post.frontmatter.title} | Inside React`;
   const description = post.frontmatter.description;
-  const url = `https://sanku.blog/blog/${slug}`;
+  const url = `https://inside-react.vercel.app/blog/${slug}`;
 
   return {
     title,
@@ -31,17 +31,17 @@ export async function generateMetadata({
       title: post.frontmatter.title,
       description,
       url,
-      siteName: "Sanku's Blog",
+      siteName: "Inside React",
       type: "article",
       publishedTime: post.frontmatter.date,
-      authors: ["Sanku"],
+      authors: ["Sankalpa Acharya"],
       tags: [post.frontmatter.topic],
     },
     twitter: {
       card: "summary_large_image",
       title: post.frontmatter.title,
       description,
-      creator: "@sanku",
+      creator: "@user_sankalpa",
     },
     alternates: {
       canonical: url,
