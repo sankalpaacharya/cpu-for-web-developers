@@ -7,7 +7,7 @@ const Skeleton = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div className={cn("bg-primary/10 rounded-md", className)} {...props} />
+    <div className={cn("bg-primary/10 rounded-md animate-pulse", className)} {...props} />
   )
 }
 
@@ -123,8 +123,34 @@ export interface GitHubIssueCardProps {
   fallback?: React.ReactNode
 }
 
+// Inner async component that does the actual fetching
+async function GitHubIssueContent({
+  owner,
+  repo,
+  issueNumber,
+  className,
+  excerpt,
+  maxBodyLength = 280,
+}: Omit<GitHubIssueCardProps, "fallback">) {
+  const issue = await fetchGitHubIssue(owner, repo, issueNumber)
+
+  if (!issue) {
+    return <GitHubIssueNotFound className={className} />
+  }
+
+  return (
+    <MagicGitHubIssue
+      issue={issue}
+      excerpt={excerpt}
+      maxBodyLength={maxBodyLength}
+      className={className}
+    />
+  )
+}
+
 /**
- * GitHubIssueCard (Server Side Only)
+ * GitHubIssueCard with Streaming - renders skeleton immediately,
+ * streams in the issue content without blocking the page
  * 
  * Usage:
  * <GitHubIssueCard 
@@ -133,7 +159,7 @@ export interface GitHubIssueCardProps {
  *   issueNumber={7942} 
  * />
  */
-export const GitHubIssueCard = async ({
+export function GitHubIssueCard({
   owner,
   repo,
   issueNumber,
@@ -141,20 +167,16 @@ export const GitHubIssueCard = async ({
   excerpt,
   maxBodyLength = 280,
   fallback = <GitHubIssueSkeleton />,
-}: GitHubIssueCardProps) => {
-  const issue = await fetchGitHubIssue(owner, repo, issueNumber)
-
-  if (!issue) {
-    return <GitHubIssueNotFound className={className} />
-  }
-
+}: GitHubIssueCardProps) {
   return (
     <Suspense fallback={fallback}>
-      <MagicGitHubIssue
-        issue={issue}
+      <GitHubIssueContent
+        owner={owner}
+        repo={repo}
+        issueNumber={issueNumber}
+        className={className}
         excerpt={excerpt}
         maxBodyLength={maxBodyLength}
-        className={className}
       />
     </Suspense>
   )

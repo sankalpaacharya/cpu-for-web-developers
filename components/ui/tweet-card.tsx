@@ -1,16 +1,24 @@
 import { Suspense } from "react"
 import { type TweetProps } from "react-tweet"
 import { getTweet } from "react-tweet/api"
+import { unstable_cache } from "next/cache"
 
 import { cn } from "@/lib/utils"
 import { MagicTweet } from "./magic-tweet"
+
+// Cache tweet fetches - persists across requests in dev and production
+const getCachedTweet = unstable_cache(
+  async (id: string) => getTweet(id),
+  ["tweet-cache"],
+  { revalidate: 3600 } // Cache for 1 hour
+)
 
 const Skeleton = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div className={cn("bg-primary/10 rounded-md", className)} {...props} />
+    <div className={cn("bg-primary/10 rounded-md animate-pulse", className)} {...props} />
   )
 }
 
@@ -54,10 +62,62 @@ export const TweetNotFound = ({
   </div>
 )
 
+interface TweetCardProps {
+  id?: string
+  className?: string
+  comments?: number
+  reposts?: number
+  likes?: number
+  bookmarks?: number
+  fallback?: React.ReactNode
+  onError?: (error: Error) => void
+  components?: TweetProps["components"]
+}
+
+// Inner async component that does the actual fetching
+async function TweetContent({
+  id,
+  components,
+  onError,
+  comments,
+  reposts,
+  likes,
+  bookmarks,
+  className,
+}: TweetCardProps) {
+  const tweet = id
+    ? await getCachedTweet(id).catch((err) => {
+        if (onError) {
+          onError(err)
+        } else {
+          console.error(err)
+        }
+        return undefined
+      })
+    : undefined
+
+  if (!tweet) {
+    const NotFound = components?.TweetNotFound || TweetNotFound
+    return <NotFound className={className} />
+  }
+
+  return (
+    <MagicTweet
+      tweet={tweet}
+      comments={comments}
+      reposts={reposts}
+      likes={likes}
+      bookmarks={bookmarks}
+      className={className}
+    />
+  )
+}
+
 /**
- * TweetCard (Server Side Only)
+ * TweetCard with Streaming - renders skeleton immediately, 
+ * streams in the tweet content without blocking the page
  */
-export const TweetCard = async ({
+export function TweetCard({
   id,
   components,
   fallback = <TweetSkeleton />,
@@ -66,39 +126,19 @@ export const TweetCard = async ({
   reposts,
   likes,
   bookmarks,
-  ...props
-}: TweetProps & {
-  className?: string
-  comments?: number
-  reposts?: number
-  likes?: number
-  bookmarks?: number
-}) => {
-  const tweet = id
-    ? await getTweet(id).catch((err) => {
-      if (onError) {
-        onError(err)
-      } else {
-        console.error(err)
-      }
-      return undefined
-    })
-    : undefined
-
-  if (!tweet) {
-    const NotFound = components?.TweetNotFound || TweetNotFound
-    return <NotFound {...props} />
-  }
-
+  className,
+}: TweetCardProps) {
   return (
     <Suspense fallback={fallback}>
-      <MagicTweet 
-        tweet={tweet} 
+      <TweetContent
+        id={id}
+        components={components}
+        onError={onError}
         comments={comments}
         reposts={reposts}
         likes={likes}
         bookmarks={bookmarks}
-        {...props} 
+        className={className}
       />
     </Suspense>
   )

@@ -14,6 +14,9 @@ export const chConfig: CodeHikeConfig = {
 
 const CONTENT_DIR = path.join(process.cwd(), "content/blog");
 
+// Cache for frontmatter to avoid repeated file reads
+const frontmatterCache = new Map<string, { data: PostFrontmatter; mtime: number }>();
+
 export interface PostFrontmatter {
     title: string;
     description: string;
@@ -75,14 +78,32 @@ export function getAllPostSlugs(): string[] {
 /**
  * Get frontmatter only for a specific post - fast, no MDX compilation
  * Use this when you only need metadata (e.g., for OG images, metadata)
+ * Includes in-memory caching with mtime checking for dev mode performance
  */
 export function getPostFrontmatter(slug: string): Post | null {
     const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
     if (!fs.existsSync(filePath)) {
         return null;
     }
+
+    // Check cache with mtime validation (for hot reload support in dev)
+    const stats = fs.statSync(filePath);
+    const mtime = stats.mtimeMs;
+    const cached = frontmatterCache.get(slug);
+
+    if (cached && cached.mtime === mtime) {
+        return {
+            slug,
+            frontmatter: cached.data,
+        };
+    }
+
     const source = fs.readFileSync(filePath, "utf-8");
     const { data } = matter(source);
+
+    // Update cache
+    frontmatterCache.set(slug, { data: data as PostFrontmatter, mtime });
+
     return {
         slug,
         frontmatter: data as PostFrontmatter,

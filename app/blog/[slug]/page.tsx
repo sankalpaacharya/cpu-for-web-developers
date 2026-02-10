@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/mdx";
-import { getAllPostSlugs, isScrollyPost, getAllPosts } from "@/lib/mdx-data";
+import { getAllPostSlugs, isScrollyPost, getPostFrontmatter } from "@/lib/mdx-data";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { TableOfContents } from "@/components/blog/table-of-contents";
@@ -16,7 +16,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  // Use fast frontmatter parsing (gray-matter) instead of full MDX compilation
+  const post = getPostFrontmatter(slug);
   if (!post) return {};
 
   const title = `${post.frontmatter.title} | Sanku's Blog`;

@@ -261,7 +261,7 @@ This happens in small time slices. React works for ~5ms, then
 yields. The browser breathes. Then React continues where it left 
 off.
 
-The old Scheduler (pre-React 18-ish) used a fixed ~5 ms heuristic in some paths. Modern React [scheduler package](https://github.com/facebook/react/tree/main/packages/scheduler) is frame-aligned and dynamic. It tries to finish before the next frame deadline (~16.7 ms @60 fps, ~8.3 ms @120 fps), yielding earlier only when it knows a higher-priority event is pending or when it's safe.
+> The old Scheduler (pre-React 18-ish) used a fixed ~5 ms heuristic in some paths. Modern React [scheduler package](https://github.com/facebook/react/tree/main/packages/scheduler) is frame-aligned and dynamic. It tries to finish before the next frame deadline (~16.7 ms @60 fps, ~8.3 ms @120 fps), yielding earlier only when it knows a higher-priority event is pending or when it's safe.
 
 how the react scheduler works can be a different topic of blog but for simplicity in this blog we will say ~5ms
 
@@ -305,19 +305,19 @@ stop whenever it wants, and resume whenever it wants.
 
 <img src="/blog/fiber/fiber.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
 
-Step 1: Move to the child
+- Step 1: Move to the child
 
 When React finishes performing work on a fiber, the first thing it checks is whether that fiber has a child. If it does, that child fiber becomes the next unit of work.
 
 From our example, once React finishes working on the `form` fiber, it moves to its child fiber.
 
-Step 2: Move to the sibling
+- Step 2: Move to the sibling
 
 If a fiber does not have a child, React looks for a sibling fiber.
 
 From the example, the `input` fiber does not have a child, so React moves to its sibling. In the same way, traversal continues through `label`, then down to `span`, and then to `a`.
 
-Step 3: Move upward to find work
+- Step 3: Move upward to find work
 
 If a fiber has neither a child nor a sibling, React moves upward using the return pointer. At this point, React looks for the closest parent fiber that has an unvisited sibling.
 
@@ -325,7 +325,7 @@ From the example, once React reaches a fiber that has no remaining child or sibl
 
 If the parent fiber also does not have a sibling, React keeps moving upward until it reaches the `root` fiber.
 
-Step 4: Stop at the root
+- Step 4: Stop at the root
 
 Traversal continues until React reaches the root fiber and there are no more fibers left to process.
 
@@ -352,7 +352,7 @@ been working for 5ms yet?"
 If yes, React stops. It doesn't finish the tree. It just... stops. Saves 
 a pointer to where it was. Exits the function. The call stack clears.
 
-Now the browser gets control back. It handles any pending events—your 
+Now the browser gets control back. It handles any pending events your 
 next keystroke, a scroll, a click. It repaints if needed. Does whatever 
 it needs to do.
 
@@ -365,6 +365,7 @@ processed.
 Your typing feels instant because the browser handles each keystroke 
 within 5ms. React is rendering in the background, in little chunks, 
 without blocking you.
+
 
 # Conclusion
 
