@@ -12,9 +12,10 @@ export const contentType = "image/png";
 export default async function Image({
     params,
 }: {
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 }) {
-    const post = getPostFrontmatter(params.slug);
+    const { slug } = await params;
+    const post = getPostFrontmatter(slug);
 
     if (!post) {
         return new ImageResponse(
