@@ -79,7 +79,6 @@ export default async function Image() {
             Inside React
           </h1>
 
-          {/* Description */}
           <p
             style={{
               fontSize: 28,
