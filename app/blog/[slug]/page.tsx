@@ -4,6 +4,7 @@ import { getAllPostSlugs, isScrollyPost, getPostFrontmatter } from "@/lib/mdx-da
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { TableOfContents } from "@/components/blog/table-of-contents";
+import { AskAIButtons } from "@/components/blog/ask-ai-buttons";
 
 export function generateStaticParams() {
   const slugs = getAllPostSlugs();
@@ -108,6 +109,9 @@ export default async function BlogPost({
             <p className="text-base text-foreground/60 leading-relaxed max-w-xl">
               {post.frontmatter.description}
             </p>
+
+            {/* Ask AI Buttons */}
+            <AskAIButtons slug={slug} title={post.frontmatter.title} />
 
             {/* Elegant separator */}
             <div className="mt-12 w-16 h-px bg-muted-foreground/20" />

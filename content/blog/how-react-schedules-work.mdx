@@ -7,6 +7,48 @@ draft: true
 ---
 
 
-# this is 
+React scheduler plays really important role on how your render are protize in your react apps, 
+react before 16 used to render everything in a synchronous way, in a recursive function but 
+things got changed after react team introduced a new reconciliation algorithm called _fiber_ 
 
 
+if you wanna understand why react fiber exist, i have already wrote a blog for same _understanding why react fiber exists_
+
+
+in this blog we will dive deep into a react scheduler package and how it allows react to cause mid rendering perform a higher
+priority task and resume from where it left off. 
+
+# I'm fast as fk boi
+
+<img src="/blog/scheduler/zoro.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+well we can't directly pause javascript execution or we can't just windoff the callstack and pickup something and process 
+cause it's not fundamentally available in javascript, so with this new reconciliation algorithm react breaks 
+the rendering process into a small unit of work, rather doing all rendering process once we perform a rendering 
+in a small unit of work
+
+<img src="/blog/scheduler/wait.svg" alt="React UI Runtime" width="800" height="100" style={{ display: 'block', margin: '2rem auto' }} />
+
+it's a simple concept if we have a can't 
+
+
+so here the `5ms` is not a hard rule but some heuristic value, your browser needs to repaint and go through its own process 
+but if js thread is takes more than `16ms` it will drop the frame and again it's a janky UI (explain this more)
+
+# Giving Control Back to Browser
+When we say giving control back to a browser it isn't we are waiting for js to complete and we will use that computation 
+power to do the `repaint` and `reflow`
+
+JavaScript is a single threaded not the browser, it would cause an race condition, inconsistent layout 
+if two thread tried to do same thing  just imagine browser doing the calculations of your div and components and in 
+the middle of it, your js program does
+
+``` js  
+div.style.width = "500px"
+```
+
+so browser just waits for js to finish it's work so that it's like _ah ok that's final thing then 
+i will do my work now_
+
+
+# requestIdleCallback
