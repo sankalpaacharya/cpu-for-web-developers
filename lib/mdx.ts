@@ -90,6 +90,9 @@ export const getPostBySlug = cache(async (slug: string): Promise<PostWithContent
         remarkPlugins: [[remarkCodeHike, chConfig]],
         recmaPlugins: [[recmaCodeHike, chConfig]],
       },
+      // Allow JS expressions in MDX (e.g., style={{ ... }})
+      // Required for next-mdx-remote v6.0.0+
+      blockJS: false,
     },
   });
 
