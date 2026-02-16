@@ -21,7 +21,6 @@ Help me understand the concepts explained in this article. Be ready to explain c
 
   return (
     <div className="flex items-center gap-3 mt-8 pt-6 border-t border-muted-foreground/15">
-
       <a
         href={chatGPTUrl}
         target="_blank"
@@ -53,6 +52,21 @@ Help me understand the concepts explained in this article. Be ready to explain c
           className="opacity-70"
         />
         Claude
+      </a>
+      <a
+        href="https://heygaia.io/c"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors"
+      >
+        <img
+          src="https://raw.githubusercontent.com/theexperiencecompany/gaia/10ddc7be52907bb2810114234418787aad257bd8/apps/web/public/brand/gaia_logo.svg"
+          alt="Gaia"
+          width={16}
+          height={16}
+          className="opacity-70"
+        />
+        Gaia
       </a>
     </div>
   );
