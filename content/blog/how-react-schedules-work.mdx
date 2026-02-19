@@ -1,5 +1,5 @@
 ---
-title: "How React Schedule Work"
+title: "How state update works internally"
 description: "I'm looking for a job"
 date: "2026-01-26"
 topic: "React"
@@ -7,10 +7,135 @@ draft: true
 ---
 
 
-React scheduler plays really important role on how your render are protize in your react apps, 
-react before 16 used to render everything in a synchronous way, in a recursive function but 
-things got changed after react team introduced a new reconciliation algorithm called _fiber_ 
+I'm sure most of the react developers have gone through this once, updating the state and trying to `console.log` it in the next 
+line and wondering for a hour why my state isn't changing. 
 
+React is easy to get started with but also soon we crash into a weird bugs that makes us wonder 
+_what the hell is even going on_ and it's often time what we think of how it works vs how it is actually working.
+
+Let's start with a few examples and we will dig deeper
+<Sandpack
+template="react"
+showConsole={true}
+files={{
+"/App.js": `import { useState } from "react";
+import "./styles.css";
+
+export default function App() {
+  const [count, setCount] = useState(0);
+  const [stale, setStale] = useState(0);
+  const [updated, setUpdated] = useState(0);
+
+  const handleLogAfterSet = () => {
+    setCount(count + 1);
+    console.log(\`After setCount: \${count}\`);
+  };
+
+  const handleSetThreeTimes = () => {
+    setStale(stale + 1);
+    setStale(stale + 1);
+    setStale(stale + 1);
+  };
+
+  const handleSetWithUpdater = () => {
+    setUpdated(prev => prev + 1);
+    setUpdated(prev => prev + 1);
+    setUpdated(prev => prev + 1);
+  };
+
+  return (
+    <div className="container">
+      <div className="card">
+        <span className="label">console.log after setState</span>
+        <span className="count">{count}</span>
+        <button className="btn" onClick={handleLogAfterSet}>increment</button>
+      </div>
+      <div className="card">
+        <span className="label">setState(val + 1) x3</span>
+        <span className="count">{stale}</span>
+        <button className="btn" onClick={handleSetThreeTimes}>increment x3</button>
+      </div>
+      <div className="card">
+        <span className="label">setState(prev =&gt; prev + 1) x3</span>
+        <span className="count">{updated}</span>
+        <button className="btn" onClick={handleSetWithUpdater}>increment x3</button>
+      </div>
+    </div>
+  );
+}`,
+"/styles.css": `.container {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 32px 16px;
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px;
+  border: 1px solid #e2e2e2;
+  border-radius: 10px;
+  min-width: 140px;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: #666;
+  text-align: center;
+}
+
+.count {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: #1a1a2e;
+}
+
+.btn {
+  padding: 8px 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  background: #1a1a2e;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: #16213e;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+`
+}}
+/>
+```jsx 
+  const handleLogAfterSet = () => {
+    setCount(count + 1);
+    console.log(\`After setCount: \${count}\`);
+  };
+```
+
+Try clicking the first `increment` button and check the console tab, you will see still see `0` as a value instead of 
+`1` _Hmm, that seems odd isn't it?_
+
+```jsx
+  const handleSetThreeTimes = () => {
+    setState(stale + 1);
+    setState(stale + 1);
+    setState(stale + 1);
+  };
+```
+Click the second `increment` button
 
 if you wanna understand why react fiber exist, i have already wrote a blog for same _understanding why react fiber exists_
 
@@ -60,13 +185,14 @@ root fiber and mark everything as a needing update (childrenLane)
 
 still the rendering hasn't started yet
 
-
-5.1 state update is not sync#
+## State update is not sync
 
     The set function only updates the state variable for the next render. If you read the state variable after calling the set function, you will still get the old value that was on the screen before your call.
 
-This is easy to understand, we’ve already seen how setState() schedules re-render in next tick, it is not sync and the updated value can only be got from next render since the state update is done in useState() not in setState().
-5.2 setState() with same value might still trigger re-render.#
+This is easy to understand, we've already seen how setState() schedules re-render in next tick, it is not sync and the updated value can only be got from next render since the state update is done in useState() not in setState().
+
+
+## setState() with same value might still trigger re-render
 
     If the new value you provide is identical to the current state, as determined by an Object.is comparison, React will skip re-rendering the component and its children. This is an optimization. Although in some cases React may still need to call your component before skipping the children, it shouldn’t affect your code.
 
@@ -77,3 +203,6 @@ Normal bailout (not early) → React already started the render for this fiber. 
 
 
 # requestIdleCallback
+
+
+

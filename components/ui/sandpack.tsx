@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import {
   SandpackProvider,
   SandpackCodeEditor,
   SandpackPreview,
+  SandpackConsole,
   useSandpack,
   UnstyledOpenInCodeSandboxButton,
 } from "@codesandbox/sandpack-react";
@@ -20,6 +22,7 @@ interface SandpackProps {
   template?: "react" | "vanilla" | "vanilla-ts" | "react-ts";
   showLineNumbers?: boolean;
   files?: Record<string, string>;
+  showConsole?: boolean;
 }
 
 const premiumDarkTheme: SandpackTheme = {
@@ -125,11 +128,63 @@ function EditorToolbar() {
   );
 }
 
+function SandpackTabbedPreview() {
+  const [activeTab, setActiveTab] = useState<"output" | "console">("output");
+
+  return (
+    <div className="border-t border-[#3d3a50]">
+      <div className="flex items-center bg-[#1a1f23] border-b border-[#3d3a50]">
+        <button
+          onClick={() => setActiveTab("output")}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === "output"
+              ? "text-[#e2e0e7] border-b-2 border-[#81a2be]"
+              : "text-[#6b6878] hover:text-[#9896a4]"
+          }`}
+        >
+          Output
+        </button>
+        <button
+          onClick={() => setActiveTab("console")}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === "console"
+              ? "text-[#e2e0e7] border-b-2 border-[#81a2be]"
+              : "text-[#6b6878] hover:text-[#9896a4]"
+          }`}
+        >
+          Console
+        </button>
+      </div>
+      <div style={{ display: activeTab === "output" ? "block" : "none" }}>
+        <SandpackPreview
+          showNavigator={false}
+          showRefreshButton={false}
+          showOpenInCodeSandbox={false}
+          style={{
+            height: "280px",
+            backgroundColor: "#ffffff",
+          }}
+        />
+      </div>
+      <div style={{ display: activeTab === "console" ? "block" : "none" }}>
+        <SandpackConsole
+          showHeader={false}
+          style={{
+            height: "280px",
+            backgroundColor: "#0d1117",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function Sandpack({
   code,
   template = "react",
   showLineNumbers = true,
   files,
+  showConsole = false,
 }: SandpackProps) {
   const defaultCode = `import { useState } from 'react';
 
@@ -211,17 +266,21 @@ button {
             />
           </div>
 
-          <div className="border-t border-[#3d3a50]">
-            <SandpackPreview
-              showNavigator={false}
-              showRefreshButton={false}
-              showOpenInCodeSandbox={false}
-              style={{
-                height: "280px",
-                backgroundColor: "#ffffff",
-              }}
-            />
-          </div>
+          {showConsole ? (
+            <SandpackTabbedPreview />
+          ) : (
+            <div className="border-t border-[#3d3a50]">
+              <SandpackPreview
+                showNavigator={false}
+                showRefreshButton={false}
+                showOpenInCodeSandbox={false}
+                style={{
+                  height: "280px",
+                  backgroundColor: "#ffffff",
+                }}
+              />
+            </div>
+          )}
         </div>
       </SandpackProvider>
     </div>
